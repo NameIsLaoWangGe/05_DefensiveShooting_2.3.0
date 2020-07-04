@@ -2,11 +2,11 @@
     "x":0,
     "type":"View",
     "selectedBox":2,
-    "selecteID":6,
+    "selecteID":25,
     "searchKey":"View",
     "props":{"width":720,"sceneColor":"#000000","height":1280},
     "nodeParent":-1,
-    "maxID":7,
+    "maxID":26,
     "label":"View",
     "isOpen":true,
     "isDirectory":true,
@@ -21,7 +21,7 @@
             "source":"src/script/Game/UIMain.ts",
             "searchKey":"Script,UIMain",
             "removeAble":true,
-            "props":{},
+            "props":{"Enemy":"@Prefab:Prefab/Enemy.prefab"},
             "nodeParent":2,
             "label":"UIMain",
             "isDirectory":false,
@@ -42,6 +42,90 @@
             "isAniNode":true,
             "hasChild":false,
             "compId":6,
+            "child":[
+                ]
+        },
+        {
+            "x":15,
+            "type":"Sprite",
+            "searchKey":"Sprite,Operat,Operat",
+            "props":{"y":1097,"x":0,"width":720,"var":"Operat","name":"Operat","height":159},
+            "nodeParent":2,
+            "label":"Operat",
+            "isOpen":true,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":10,
+            "child":[
+                {
+                    "x":30,
+                    "type":"Sprite",
+                    "searchKey":"Sprite,BtnYellow,BtnYellow",
+                    "props":{"y":77,"x":541,"width":143,"var":"BtnYellow","texture":"Frame/UI/ui_square_c_011.png","pivotY":72,"pivotX":72,"name":"BtnYellow","height":144},
+                    "nodeParent":10,
+                    "label":"BtnYellow",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":9,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Sprite",
+                    "searchKey":"Sprite,BtnGreen,BtnGreen",
+                    "props":{"y":77,"x":368,"width":143,"var":"BtnGreen","texture":"Frame/UI/ui_square_c_009.png","pivotY":72,"pivotX":72,"name":"BtnGreen","height":144},
+                    "nodeParent":10,
+                    "label":"BtnGreen",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":8,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Sprite",
+                    "searchKey":"Sprite,BtnBlue,BtnBlue",
+                    "props":{"y":77,"x":200,"width":143,"var":"BtnBlue","texture":"Frame/UI/ui_square_c_002.png","pivotY":72,"pivotX":72,"name":"BtnBlue","height":144},
+                    "nodeParent":10,
+                    "label":"BtnBlue",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":7,
+                    "child":[
+                        ]
+                }]
+        },
+        {
+            "x":15,
+            "type":"Sprite",
+            "searchKey":"Sprite,Protagonist,Protagonist",
+            "props":{"y":977,"x":360,"width":143,"var":"Protagonist","texture":"Frame/UI/ui_square_c_007.png","pivotY":72,"pivotX":72,"name":"Protagonist","height":144},
+            "nodeParent":2,
+            "label":"Protagonist",
+            "isDirectory":false,
+            "isAniNode":true,
+            "hasChild":false,
+            "compId":11,
+            "child":[
+                ]
+        },
+        {
+            "x":15,
+            "type":"Sprite",
+            "searchKey":"Sprite",
+            "props":{"y":733,"x":396,"texture":"Frame/UI/ui_square_004.png"},
+            "nodeParent":2,
+            "label":"Sprite",
+            "isDirectory":false,
+            "isAniNode":true,
+            "hasChild":false,
+            "compId":19,
             "child":[
                 ]
         }],

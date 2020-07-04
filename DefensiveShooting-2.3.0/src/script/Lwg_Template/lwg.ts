@@ -700,7 +700,7 @@ export module lwg {
                 this.lwgInit();
                 this.btnOnClick();
                 this.adaptive();
-                printPoint('on', this.calssName);
+                // printPoint('on', this.calssName);
             }
             /**游戏当前的状态*/
             gameState(calssName): void {
@@ -811,26 +811,26 @@ export module lwg {
 
     /**提示模块*/
     export module Hint {
+        enum SkinUrl {
+            'ui_square_012',
+        }
         /**
           * 创建提示框prefab
           * @param type 类型，也就是提示文字类型
          */
         export function _createHint(type): void {
-            let sp: Laya.Sprite;
-            Laya.loader.load('prefab/HintPre.json', Laya.Handler.create(this, function (prefab: Laya.Prefab) {
-                let _prefab = new Laya.Prefab();
-                _prefab.json = prefab;
-                sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
-                Laya.stage.addChild(sp);
-                sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
-                let dec = sp.getChildByName('dec') as Laya.Label;
-                dec.text = Enum.HintDec[type];
-                sp.zOrder = 100;
+            let sp: Laya.Sprite = new Laya.Sprite();
+            let pic: Laya.Image = new Laya.Image();
+            pic.skin = SkinUrl[0];
+            Laya.stage.addChild(sp);
+            sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
+            let dec = sp.getChildByName('dec') as Laya.Label;
+            dec.text = Enum.HintDec[type];
+            sp.zOrder = 100;
 
-                Animation.HintAni_01(sp, 100, 100, 1000, 50, 100, f => {
-                    sp.removeSelf();
-                });
-            }));
+            Animation.HintAni_01(sp, 100, 100, 1000, 50, 100, f => {
+                sp.removeSelf();
+            });
         }
     }
 

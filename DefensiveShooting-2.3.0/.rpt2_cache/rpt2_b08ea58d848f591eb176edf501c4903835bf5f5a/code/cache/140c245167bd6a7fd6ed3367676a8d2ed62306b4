@@ -1,0 +1,8 @@
+{
+  "code": "import { lwg } from \"../Lwg_Template/lwg\";\r\nexport default class UIMain extends lwg.Admin.Scene {\r\n    constructor() {\r\n        super();\r\n        this.timer = 0;\r\n    }\r\n    lwgInit() {\r\n        this.timer = 0;\r\n        console.log(lwg.Admin._sceneControl);\r\n    }\r\n    createEnemy() {\r\n        let enemy;\r\n        enemy = Laya.Pool.getItemByCreateFun('enemy', this.Enemy.create, this.Enemy);\r\n        this.self.addChild(enemy);\r\n        let randX = enemy.width / 2 + (Laya.stage.width - enemy.width / 2 * 2) * Math.random();\r\n        enemy.pos(randX, 0);\r\n        enemy.zOrder = 0;\r\n    }\r\n    lwgOnUpdate() {\r\n        if (lwg.Global._gameLevel) {\r\n            this.timer++;\r\n            if (this.timer % 60 === 0) {\r\n            }\r\n        }\r\n    }\r\n}\r\n",
+  "references": [
+    "F:/Work/Game/05_DefensiveShooting_2.3.0/project/DefensiveShooting-2.3.0/src/script/Lwg_Template/lwg.ts",
+    "F:/Work/Game/05_DefensiveShooting_2.3.0/project/DefensiveShooting-2.3.0/src/TJ/RecordManager.ts",
+    "F:/Work/Game/05_DefensiveShooting_2.3.0/project/DefensiveShooting-2.3.0/src/TJ/Admanager.ts"
+  ]
+}

@@ -612,7 +612,6 @@
                     this.lwgInit();
                     this.btnOnClick();
                     this.adaptive();
-                    printPoint('on', this.calssName);
                 }
                 gameState(calssName) {
                     switch (calssName) {
@@ -691,21 +690,22 @@
         })(Admin = lwg.Admin || (lwg.Admin = {}));
         let Hint;
         (function (Hint) {
+            let SkinUrl;
+            (function (SkinUrl) {
+                SkinUrl[SkinUrl["ui_square_012"] = 0] = "ui_square_012";
+            })(SkinUrl || (SkinUrl = {}));
             function _createHint(type) {
-                let sp;
-                Laya.loader.load('prefab/HintPre.json', Laya.Handler.create(this, function (prefab) {
-                    let _prefab = new Laya.Prefab();
-                    _prefab.json = prefab;
-                    sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
-                    Laya.stage.addChild(sp);
-                    sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
-                    let dec = sp.getChildByName('dec');
-                    dec.text = Enum.HintDec[type];
-                    sp.zOrder = 100;
-                    Animation.HintAni_01(sp, 100, 100, 1000, 50, 100, f => {
-                        sp.removeSelf();
-                    });
-                }));
+                let sp = new Laya.Sprite();
+                let pic = new Laya.Image();
+                pic.skin = SkinUrl[0];
+                Laya.stage.addChild(sp);
+                sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
+                let dec = sp.getChildByName('dec');
+                dec.text = Enum.HintDec[type];
+                sp.zOrder = 100;
+                Animation.HintAni_01(sp, 100, 100, 1000, 50, 100, f => {
+                    sp.removeSelf();
+                });
             }
             Hint._createHint = _createHint;
         })(Hint = lwg.Hint || (lwg.Hint = {}));
@@ -1865,9 +1865,25 @@
     class UIMain extends lwg.Admin.Scene {
         constructor() {
             super();
+            this.timer = 0;
         }
         lwgInit() {
+            this.timer = 0;
             console.log(lwg.Admin._sceneControl);
+        }
+        createEnemy() {
+            let enemy;
+            enemy = Laya.Pool.getItemByCreateFun('enemy', this.Enemy.create, this.Enemy);
+            this.self.addChild(enemy);
+            let randX = enemy.width / 2 + (Laya.stage.width - enemy.width / 2 * 2) * Math.random();
+            enemy.pos(randX, 0);
+            enemy.zOrder = 0;
+        }
+        lwgOnUpdate() {
+            if (lwg.Global._gameLevel) {
+                this.timer++;
+                if (this.timer % 60 === 0) ;
+            }
         }
     }
 
