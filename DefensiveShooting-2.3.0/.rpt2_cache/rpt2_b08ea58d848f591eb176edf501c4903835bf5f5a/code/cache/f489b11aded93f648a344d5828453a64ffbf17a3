@@ -1,6 +1,0 @@
-{
-  "code": "import { lwg } from \"../Lwg_Template/lwg\";\r\nexport default class UIMain_Bullet extends lwg.Admin.Object {\r\n    lwgOnUpdate() {\r\n        this.self.y -= 10;\r\n        if (this.self.y < -100) {\r\n            this.self.removeSelf();\r\n        }\r\n    }\r\n}\r\n",
-  "references": [
-    "F:/Work/Game/05_DefensiveShooting_2.3.0/project/DefensiveShooting-2.3.0/src/script/Lwg_Template/lwg.ts"
-  ]
-}

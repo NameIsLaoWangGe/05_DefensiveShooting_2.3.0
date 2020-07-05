@@ -1144,6 +1144,24 @@
                 bulletType["bule"] = "bule";
                 bulletType["green"] = "green";
             })(bulletType = Enum.bulletType || (Enum.bulletType = {}));
+            let bulletSkin;
+            (function (bulletSkin) {
+                bulletSkin["yellow"] = "Frame/UI/ui_circle_c_008.png";
+                bulletSkin["bule"] = "Frame/UI/ui_circle_c_006.png";
+                bulletSkin["green"] = "Frame/UI/ui_circle_c_001.png";
+            })(bulletSkin = Enum.bulletSkin || (Enum.bulletSkin = {}));
+            let enemyType;
+            (function (enemyType) {
+                enemyType["yellow"] = "yellow";
+                enemyType["bule"] = "bule";
+                enemyType["green"] = "green";
+            })(enemyType = Enum.enemyType || (Enum.enemyType = {}));
+            let enemySkin;
+            (function (enemySkin) {
+                enemySkin["yellow"] = "Frame/UI/ui_square_011.png";
+                enemySkin["bule"] = "Frame/UI/ui_square_002.png";
+                enemySkin["green"] = "Frame/UI/ui_square_009.png";
+            })(enemySkin = Enum.enemySkin || (Enum.enemySkin = {}));
         })(Enum = lwg.Enum || (lwg.Enum = {}));
         let Click;
         (function (Click) {
@@ -1896,6 +1914,24 @@
         lwgInit() {
             let num = this.self.getChildByName('Num');
             num.text = (Math.floor(Math.random() * 10) + 1).toString();
+            let pic = this.self.getChildByName('Pic');
+            let rand = Math.floor(Math.random() * 3);
+            switch (rand) {
+                case 0:
+                    pic.skin = lwg.Enum.enemySkin.yellow;
+                    this.enemyType = lwg.Enum.enemyType.yellow;
+                    break;
+                case 1:
+                    pic.skin = lwg.Enum.enemySkin.bule;
+                    this.enemyType = lwg.Enum.enemyType.bule;
+                    break;
+                case 2:
+                    pic.skin = lwg.Enum.enemySkin.green;
+                    this.enemyType = lwg.Enum.enemyType.green;
+                    break;
+                default:
+                    break;
+            }
         }
         lwgOnUpdate() {
             this.self.y += 1;
@@ -1917,16 +1953,61 @@
         lwgOnUpdate() {
             if (lwg.Global._gameStart) {
                 this.timer++;
-                if (this.timer % 30 === 0) {
-                    this.selfScene[lwg.Admin.SceneName.UIMain].createBullet();
+                if (this.timer % 10 === 0) {
+                    if (this.selfScene['UIMain'].launchType) {
+                        this.selfScene[lwg.Admin.SceneName.UIMain].createBullet();
+                    }
                 }
             }
         }
     }
 
     class UIMain_Bullet extends lwg.Admin.Object {
+        constructor() {
+            super(...arguments);
+            this.targetEnemy = new Laya.Sprite();
+            this.speed = 20;
+        }
+        lwgInit() {
+            this.bulletState = 0;
+            let enemy = this.selfScene['EnemyParent'].getChildAt(0);
+            if (enemy) {
+                this.targetEnemy = enemy;
+            }
+        }
+        onTriggerEnter(other, self) {
+            let otherOwner = other.owner;
+            if (other.label === 'enemy') {
+                let num = otherOwner.getChildByName('Num');
+                if (Number(num.text) <= 1) {
+                    otherOwner.removeSelf();
+                }
+                else {
+                    if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
+                        num.text = (Number(num.text) - 2).toString();
+                    }
+                }
+                this.self.removeSelf();
+            }
+        }
         lwgOnUpdate() {
-            this.self.y -= 10;
+            let point;
+            if (this.targetEnemy.parent) {
+                this.bulletState = 1;
+                point = new Laya.Point(this.self.x - this.targetEnemy.x, this.self.y - this.targetEnemy.y);
+            }
+            else {
+                if (this.bulletState === 1) {
+                    point = new Laya.Point(this.selfScene['Protagonist'].x - this.self.x, this.selfScene['Protagonist'].y - this.self.y);
+                }
+                else {
+                    this.self.removeSelf();
+                    return;
+                }
+            }
+            point.normalize();
+            this.self.x -= this.speed * point.x;
+            this.self.y -= this.speed * point.y;
             if (this.self.y < -100) {
                 this.self.removeSelf();
             }
@@ -1942,26 +2023,46 @@
         }
         lwgInit() {
             this.timer = 0;
+            this.bulletNum = 0;
             this.self['Protagonist'].addComponent(UIMain_Protagonist);
             lwg.Global._gameStart = true;
         }
         createEnemy() {
             let enemy;
             enemy = Laya.Pool.getItemByCreateFun('enemy', this.Enemy.create, this.Enemy);
-            this.self.addChild(enemy);
+            this.self['EnemyParent'].addChild(enemy);
             let randX = enemy.width / 2 + (Laya.stage.width - enemy.width / 2 * 2) * Math.random();
             enemy.addComponent(UIMain_Enemy);
             enemy.pos(randX, 0);
             enemy.zOrder = 0;
+            this.bulletNum++;
+            return enemy;
         }
         createBullet() {
             let bullet;
             bullet = Laya.Pool.getItemByCreateFun('bullet', this.Bullet.create, this.Bullet);
-            this.self.addChild(bullet);
+            this.self['BulletParent'].addChild(bullet);
             bullet.pos(this.self['Protagonist'].x, this.self['Protagonist'].y);
             bullet.zOrder = 0;
             bullet.addComponent(UIMain_Bullet);
-            console.log('创建子弹');
+            let pic = bullet.getChildByName('Pic');
+            switch (this.launchType) {
+                case lwg.Enum.bulletType.yellow:
+                    pic.skin = lwg.Enum.bulletSkin.yellow;
+                    bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.yellow;
+                    break;
+                case lwg.Enum.bulletType.bule:
+                    pic.skin = lwg.Enum.bulletSkin.bule;
+                    bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.bule;
+                    break;
+                case lwg.Enum.bulletType.green:
+                    pic.skin = lwg.Enum.bulletSkin.green;
+                    bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.green;
+                    break;
+                default:
+                    break;
+            }
+            return bullet;
         }
         btnOnClick() {
             lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnYellow'], this, null, null, this.clickUp, null);
@@ -1971,19 +2072,19 @@
         clickUp(e) {
             switch (e.currentTarget.name) {
                 case 'BtnYellow':
-                    this.bulletType = lwg.Enum.bulletType.yellow;
+                    this.launchType = lwg.Enum.bulletType.yellow;
                     this.self['BtnYellow'].scale(1.1, 1.1);
                     this.self['BtnBlue'].scale(1, 1);
                     this.self['BtnGreen'].scale(1, 1);
                     break;
                 case 'BtnBlue':
-                    this.bulletType = lwg.Enum.bulletType.bule;
+                    this.launchType = lwg.Enum.bulletType.bule;
                     this.self['BtnYellow'].scale(1, 1);
                     this.self['BtnBlue'].scale(1.1, 1.1);
                     this.self['BtnGreen'].scale(1, 1);
                     break;
                 case 'BtnGreen':
-                    this.bulletType = lwg.Enum.bulletType.green;
+                    this.launchType = lwg.Enum.bulletType.green;
                     this.self['BtnYellow'].scale(1, 1);
                     this.self['BtnBlue'].scale(1, 1);
                     this.self['BtnGreen'].scale(1.1, 1.1);

@@ -12,37 +12,64 @@ export default class UIMain extends lwg.Admin.Scene {
     public Bullet: Laya.Prefab;
 
     /**
-     * 子弹类型
+     * 当前发射子弹类型
      */
-    bulletType: string;
+    launchType: string;
+    /**记录当前应该攻击什么怪物，是离自己最近的*/
+
     selfVars(): void {
 
     }
 
     lwgInit(): void {
         this.timer = 0;
+        this.bulletNum = 0;
         this.self['Protagonist'].addComponent(UIMain_Protagonist);
         lwg.Global._gameStart = true;
     }
 
-    createEnemy(): void {
+    /**子弹数量*/
+    bulletNum: number;
+    createEnemy(): Laya.Sprite {
         let enemy: Laya.Sprite;
         enemy = Laya.Pool.getItemByCreateFun('enemy', this.Enemy.create, this.Enemy);
-        this.self.addChild(enemy);
+        this.self['EnemyParent'].addChild(enemy);
         let randX = enemy.width / 2 + (Laya.stage.width - enemy.width / 2 * 2) * Math.random();
         enemy.addComponent(UIMain_Enemy);
         enemy.pos(randX, 0);
         enemy.zOrder = 0;
+        this.bulletNum++;
+        return enemy;
     }
 
-    createBullet(): void {
+    createBullet(): Laya.Sprite {
         let bullet: Laya.Sprite;
         bullet = Laya.Pool.getItemByCreateFun('bullet', this.Bullet.create, this.Bullet);
-        this.self.addChild(bullet);
+        this.self['BulletParent'].addChild(bullet);
         bullet.pos(this.self['Protagonist'].x, this.self['Protagonist'].y);
         bullet.zOrder = 0;
         bullet.addComponent(UIMain_Bullet);
-        console.log('创建子弹')
+
+        let pic = bullet.getChildByName('Pic') as Laya.Image;
+        switch (this.launchType) {
+            case lwg.Enum.bulletType.yellow:
+                pic.skin = lwg.Enum.bulletSkin.yellow;
+                bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.yellow;
+                break;
+            case lwg.Enum.bulletType.bule:
+                pic.skin = lwg.Enum.bulletSkin.bule;
+                bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.bule;
+                break;
+            case lwg.Enum.bulletType.green:
+                pic.skin = lwg.Enum.bulletSkin.green;
+                bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.green;
+
+                break;
+
+            default:
+                break;
+        }
+        return bullet;
     }
 
     btnOnClick(): void {
@@ -54,19 +81,19 @@ export default class UIMain extends lwg.Admin.Scene {
     clickUp(e: Laya.Event): void {
         switch (e.currentTarget.name) {
             case 'BtnYellow':
-                this.bulletType = lwg.Enum.bulletType.yellow;
+                this.launchType = lwg.Enum.bulletType.yellow;
                 this.self['BtnYellow'].scale(1.1, 1.1);
                 this.self['BtnBlue'].scale(1, 1);
                 this.self['BtnGreen'].scale(1, 1);
                 break;
             case 'BtnBlue':
-                this.bulletType = lwg.Enum.bulletType.bule;
+                this.launchType = lwg.Enum.bulletType.bule;
                 this.self['BtnYellow'].scale(1, 1);
                 this.self['BtnBlue'].scale(1.1, 1.1);
                 this.self['BtnGreen'].scale(1, 1);
                 break;
             case 'BtnGreen':
-                this.bulletType = lwg.Enum.bulletType.green;
+                this.launchType = lwg.Enum.bulletType.green;
                 this.self['BtnYellow'].scale(1, 1);
                 this.self['BtnBlue'].scale(1, 1);
                 this.self['BtnGreen'].scale(1.1, 1.1);

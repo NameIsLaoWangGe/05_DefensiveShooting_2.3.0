@@ -11,8 +11,10 @@ export default class UIMain_Protagonist extends lwg.Admin.Person {
     lwgOnUpdate(): void {
         if (lwg.Global._gameStart) {
             this.timer++;
-            if (this.timer % 30 === 0) {
-                this.selfScene[lwg.Admin.SceneName.UIMain].createBullet();
+            if (this.timer % 10 === 0) {
+                if (this.selfScene['UIMain'].launchType) {
+                    this.selfScene[lwg.Admin.SceneName.UIMain].createBullet();
+                }
             }
         }
     }

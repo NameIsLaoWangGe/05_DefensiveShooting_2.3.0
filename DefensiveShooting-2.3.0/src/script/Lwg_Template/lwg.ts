@@ -1373,11 +1373,32 @@ export module lwg {
             box_02_static = "box_02_static"
         }
 
-        /**狗的动画类型*/
+        /**子弹的类型*/
         export enum bulletType {
             yellow = "yellow",
             bule = "bule",
             green = "green",
+        }
+
+        /**子弹类型对应的图片地址*/
+        export enum bulletSkin {
+            yellow = "Frame/UI/ui_circle_c_008.png",
+            bule = "Frame/UI/ui_circle_c_006.png",
+            green = "Frame/UI/ui_circle_c_001.png",
+        }
+
+        /**子弹的类型*/
+        export enum enemyType {
+            yellow = "yellow",
+            bule = "bule",
+            green = "green",
+        }
+
+        /**子弹类型对应的图片地址*/
+        export enum enemySkin {
+            yellow = "Frame/UI/ui_square_011.png",
+            bule = "Frame/UI/ui_square_002.png",
+            green = "Frame/UI/ui_square_009.png",
         }
     }
 
