@@ -609,6 +609,7 @@
                     this.calssName = this['__proto__']['constructor'].name;
                     this.gameState(this.calssName);
                     this.self[this.calssName] = this;
+                    this.selfVars();
                     this.lwgInit();
                     this.btnOnClick();
                     this.adaptive();
@@ -632,6 +633,8 @@
                     }
                 }
                 lwgInit() {
+                }
+                selfVars() {
                 }
                 btnOnClick() {
                 }
@@ -666,8 +669,15 @@
                     this.lwgInit();
                 }
                 lwgInit() {
-                    console.log('父类的初始化！');
                 }
+                onUpdate() {
+                    this.lwgOnUpdate();
+                }
+                lwgOnUpdate() { }
+                onDisable() {
+                    this.lwgOnDisable();
+                }
+                lwgOnDisable() { }
             }
             Admin.Person = Person;
             class Object extends Laya.Script {
@@ -683,8 +693,15 @@
                     this.lwgInit();
                 }
                 lwgInit() {
-                    console.log('父类的初始化！');
                 }
+                onUpdate() {
+                    this.lwgOnUpdate();
+                }
+                lwgOnUpdate() { }
+                onDisable() {
+                    this.lwgOnDisable();
+                }
+                lwgOnDisable() { }
             }
             Admin.Object = Object;
         })(Admin = lwg.Admin || (lwg.Admin = {}));
@@ -1121,9 +1138,22 @@
                 houseAni["box_01_static"] = "box_01_static";
                 houseAni["box_02_static"] = "box_02_static";
             })(houseAni = Enum.houseAni || (Enum.houseAni = {}));
+            let bulletType;
+            (function (bulletType) {
+                bulletType["yellow"] = "yellow";
+                bulletType["bule"] = "bule";
+                bulletType["green"] = "green";
+            })(bulletType = Enum.bulletType || (Enum.bulletType = {}));
         })(Enum = lwg.Enum || (lwg.Enum = {}));
         let Click;
         (function (Click) {
+            let Type;
+            (function (Type) {
+                Type["noEffect"] = "noEffect";
+                Type["largen"] = "largen";
+                Type["balloon"] = "balloon";
+                Type["beetle"] = "beetle";
+            })(Type = Click.Type || (Click.Type = {}));
             function on(effect, audioUrl, target, caller, down, move, up, out) {
                 let btnEffect;
                 if (audioUrl) {
@@ -1862,27 +1892,112 @@
         })(Tools = lwg.Tools || (lwg.Tools = {}));
     })(lwg || (lwg = {}));
 
-    class UIMain extends lwg.Admin.Scene {
+    class UIMain_Enemy extends lwg.Admin.Person {
+        lwgInit() {
+            let num = this.self.getChildByName('Num');
+            num.text = (Math.floor(Math.random() * 10) + 1).toString();
+        }
+        lwgOnUpdate() {
+            this.self.y += 1;
+            if (this.self.y >= this.selfScene['Protagonist'].y) {
+                this.self.removeSelf();
+            }
+        }
+    }
+
+    class UIMain_Protagonist extends lwg.Admin.Person {
         constructor() {
-            super();
+            super(...arguments);
             this.timer = 0;
         }
         lwgInit() {
+            console.log('我是主角！');
             this.timer = 0;
-            console.log(lwg.Admin._sceneControl);
+        }
+        lwgOnUpdate() {
+            if (lwg.Global._gameStart) {
+                this.timer++;
+                if (this.timer % 30 === 0) {
+                    this.selfScene[lwg.Admin.SceneName.UIMain].createBullet();
+                }
+            }
+        }
+    }
+
+    class UIMain_Bullet extends lwg.Admin.Object {
+        lwgOnUpdate() {
+            this.self.y -= 10;
+            if (this.self.y < -100) {
+                this.self.removeSelf();
+            }
+        }
+    }
+
+    class UIMain extends lwg.Admin.Scene {
+        constructor() {
+            super(...arguments);
+            this.timer = 0;
+        }
+        selfVars() {
+        }
+        lwgInit() {
+            this.timer = 0;
+            this.self['Protagonist'].addComponent(UIMain_Protagonist);
+            lwg.Global._gameStart = true;
         }
         createEnemy() {
             let enemy;
             enemy = Laya.Pool.getItemByCreateFun('enemy', this.Enemy.create, this.Enemy);
             this.self.addChild(enemy);
             let randX = enemy.width / 2 + (Laya.stage.width - enemy.width / 2 * 2) * Math.random();
+            enemy.addComponent(UIMain_Enemy);
             enemy.pos(randX, 0);
             enemy.zOrder = 0;
         }
+        createBullet() {
+            let bullet;
+            bullet = Laya.Pool.getItemByCreateFun('bullet', this.Bullet.create, this.Bullet);
+            this.self.addChild(bullet);
+            bullet.pos(this.self['Protagonist'].x, this.self['Protagonist'].y);
+            bullet.zOrder = 0;
+            bullet.addComponent(UIMain_Bullet);
+            console.log('创建子弹');
+        }
+        btnOnClick() {
+            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnYellow'], this, null, null, this.clickUp, null);
+            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnBlue'], this, null, null, this.clickUp, null);
+            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnGreen'], this, null, null, this.clickUp, null);
+        }
+        clickUp(e) {
+            switch (e.currentTarget.name) {
+                case 'BtnYellow':
+                    this.bulletType = lwg.Enum.bulletType.yellow;
+                    this.self['BtnYellow'].scale(1.1, 1.1);
+                    this.self['BtnBlue'].scale(1, 1);
+                    this.self['BtnGreen'].scale(1, 1);
+                    break;
+                case 'BtnBlue':
+                    this.bulletType = lwg.Enum.bulletType.bule;
+                    this.self['BtnYellow'].scale(1, 1);
+                    this.self['BtnBlue'].scale(1.1, 1.1);
+                    this.self['BtnGreen'].scale(1, 1);
+                    break;
+                case 'BtnGreen':
+                    this.bulletType = lwg.Enum.bulletType.green;
+                    this.self['BtnYellow'].scale(1, 1);
+                    this.self['BtnBlue'].scale(1, 1);
+                    this.self['BtnGreen'].scale(1.1, 1.1);
+                    break;
+                default:
+                    break;
+            }
+        }
         lwgOnUpdate() {
-            if (lwg.Global._gameLevel) {
+            if (lwg.Global._gameStart) {
                 this.timer++;
-                if (this.timer % 60 === 0) ;
+                if (this.timer % 60 === 0) {
+                    this.createEnemy();
+                }
             }
         }
     }
@@ -1963,8 +2078,8 @@
     GameConfig.startScene = "Scene/UILoding.scene";
     GameConfig.sceneRoot = "";
     GameConfig.debug = false;
-    GameConfig.stat = false;
-    GameConfig.physicsDebug = false;
+    GameConfig.stat = true;
+    GameConfig.physicsDebug = true;
     GameConfig.exportSceneToJson = true;
     GameConfig.init();
 

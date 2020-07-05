@@ -697,6 +697,7 @@ export module lwg {
                 this.gameState(this.calssName);
                 // 组件变为的self属性
                 this.self[this.calssName] = this;
+                this.selfVars();
                 this.lwgInit();
                 this.btnOnClick();
                 this.adaptive();
@@ -725,6 +726,9 @@ export module lwg {
             /**初始化，在onEnable中执行，重写即可覆盖*/
             lwgInit(): void {
                 // console.log('父类的初始化！');
+            }
+            selfVars(): void {
+
             }
             /**点击事件注册*/
             btnOnClick(): void {
@@ -775,10 +779,23 @@ export module lwg {
                 this.self[calssName] = this;
                 this.lwgInit();
             }
+
             /**初始化，在onEnable中执行，重写即可覆盖*/
             lwgInit(): void {
-                console.log('父类的初始化！');
             }
+
+            onUpdate(): void {
+                this.lwgOnUpdate();
+            }
+
+            lwgOnUpdate(): void { }
+
+            onDisable(): void {
+                this.lwgOnDisable();
+            }
+
+            lwgOnDisable(): void { }
+
         }
 
         /**物件通用父类*/
@@ -804,8 +821,20 @@ export module lwg {
             }
             /**初始化，在onEnable中执行，重写即可覆盖*/
             lwgInit(): void {
-                console.log('父类的初始化！');
             }
+
+            onUpdate(): void {
+                this.lwgOnUpdate();
+            }
+
+            lwgOnUpdate(): void { }
+
+            onDisable(): void {
+                this.lwgOnDisable();
+            }
+
+            lwgOnDisable(): void { }
+
         }
     }
 
@@ -1201,7 +1230,6 @@ export module lwg {
         }
 
 
-
         /**角色的四个方向*/
         export enum PersonDir {
             up = 'up',
@@ -1344,6 +1372,13 @@ export module lwg {
             box_01_static = "box_01_static",
             box_02_static = "box_02_static"
         }
+
+        /**狗的动画类型*/
+        export enum bulletType {
+            yellow = "yellow",
+            bule = "bule",
+            green = "green",
+        }
     }
 
     /**
@@ -1351,6 +1386,12 @@ export module lwg {
     * 2.点击事件模块
     */
     export module Click {
+        export enum Type {
+            noEffect = 'noEffect',
+            largen = 'largen',
+            balloon = 'balloon',
+            beetle = 'beetle'
+        }
         /**音乐的url*/
         export let audioUrl: string;
         /**

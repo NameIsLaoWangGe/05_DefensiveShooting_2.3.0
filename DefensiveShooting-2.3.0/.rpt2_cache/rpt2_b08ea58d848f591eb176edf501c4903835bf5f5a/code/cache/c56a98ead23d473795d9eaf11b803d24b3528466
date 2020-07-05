@@ -1,7 +1,0 @@
-{
-  "code": "import UILoding from \"./script/Game/UILoding\";\r\nimport UIMain from \"./script/Game/UIMain\";\r\nexport default class GameConfig {\r\n    constructor() { }\r\n    static init() {\r\n        var reg = Laya.ClassUtils.regClass;\r\n        reg(\"script/Game/UILoding.ts\", UILoding);\r\n        reg(\"script/Game/UIMain.ts\", UIMain);\r\n    }\r\n}\r\nGameConfig.width = 720;\r\nGameConfig.height = 1280;\r\nGameConfig.scaleMode = \"fixedwidth\";\r\nGameConfig.screenMode = \"none\";\r\nGameConfig.alignV = \"top\";\r\nGameConfig.alignH = \"left\";\r\nGameConfig.startScene = \"Scene/UILoding.scene\";\r\nGameConfig.sceneRoot = \"\";\r\nGameConfig.debug = false;\r\nGameConfig.stat = false;\r\nGameConfig.physicsDebug = false;\r\nGameConfig.exportSceneToJson = true;\r\nGameConfig.init();\r\n",
-  "references": [
-    "F:/Work/Game/05_DefensiveShooting_2.3.0/project/DefensiveShooting-2.3.0/src/script/Game/UILoding.ts",
-    "F:/Work/Game/05_DefensiveShooting_2.3.0/project/DefensiveShooting-2.3.0/src/script/Game/UIMain.ts"
-  ]
-}

@@ -2,10 +2,11 @@
     "x":0,
     "type":"Sprite",
     "selectedBox":14,
+    "selecteID":18,
     "searchKey":"Sprite,Enemy",
     "props":{"y":0,"x":0,"width":125,"presetID":1,"preset":"laya/pages/Prefab/Enemy.prefab","pivotY":63,"pivotX":63,"name":"Enemy","isPresetRoot":true,"height":126},
     "nodeParent":-1,
-    "maxID":18,
+    "maxID":19,
     "label":"Enemy",
     "isOpen":true,
     "isDirectory":true,
@@ -56,6 +57,20 @@
             "isAniNode":true,
             "hasChild":false,
             "compId":17,
+            "child":[
+                ]
+        },
+        {
+            "x":15,
+            "type":"Label",
+            "searchKey":"Label,Num",
+            "props":{"y":63,"x":63,"width":82,"valign":"middle","text":"30","presetID":5,"preset":"laya/pages/Prefab/Enemy.prefab","pivotY":22,"pivotX":41,"name":"Num","height":43,"fontSize":30,"align":"center"},
+            "nodeParent":14,
+            "label":"Num",
+            "isDirectory":false,
+            "isAniNode":true,
+            "hasChild":false,
+            "compId":18,
             "child":[
                 ]
         }],
