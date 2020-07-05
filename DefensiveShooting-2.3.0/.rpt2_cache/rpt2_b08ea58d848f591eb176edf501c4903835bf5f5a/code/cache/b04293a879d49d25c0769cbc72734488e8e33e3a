@@ -1,0 +1,6 @@
+{
+  "code": "import { lwg } from \"../Lwg_Template/lwg\";\r\nexport default class UIMain_Protagonist extends lwg.Admin.Person {\r\n    constructor() {\r\n        super(...arguments);\r\n        this.timer = 0;\r\n    }\r\n    lwgInit() {\r\n        console.log('我是主角！');\r\n        this.timer = 0;\r\n    }\r\n    lwgOnUpdate() {\r\n        if (lwg.Global._gameStart) {\r\n            this.timer++;\r\n            if (this.timer % 10 === 0) {\r\n                if (this.selfScene['UIMain'].launchType) {\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n",
+  "references": [
+    "F:/Work/Game/05_DefensiveShooting_2.3.0/project/DefensiveShooting-2.3.0/src/script/Lwg_Template/lwg.ts"
+  ]
+}

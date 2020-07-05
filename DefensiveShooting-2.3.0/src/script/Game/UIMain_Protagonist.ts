@@ -13,7 +13,7 @@ export default class UIMain_Protagonist extends lwg.Admin.Person {
             this.timer++;
             if (this.timer % 10 === 0) {
                 if (this.selfScene['UIMain'].launchType) {
-                    this.selfScene[lwg.Admin.SceneName.UIMain].createBullet();
+                    // this.selfScene[lwg.Admin.SceneName.UIMain].createBullet();
                 }
             }
         }

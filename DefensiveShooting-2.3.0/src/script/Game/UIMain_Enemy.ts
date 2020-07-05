@@ -2,8 +2,8 @@ import { lwg } from "../Lwg_Template/lwg";
 
 export default class UIMain_Enemy extends lwg.Admin.Person {
 
-    /**怪物类型*/ 
-    enemyType:string;
+    /**怪物类型*/
+    enemyType: string;
     lwgInit(): void {
         let num = this.self.getChildByName('Num') as Laya.Label;
         num.text = (Math.floor(Math.random() * 10) + 1).toString();
@@ -20,19 +20,23 @@ export default class UIMain_Enemy extends lwg.Admin.Person {
             case 1:
                 pic.skin = lwg.Enum.enemySkin.bule;
                 this.enemyType = lwg.Enum.enemyType.bule;
-                
+
                 break;
 
             case 2:
                 pic.skin = lwg.Enum.enemySkin.green;
                 this.enemyType = lwg.Enum.enemyType.green;
-                
+
                 break;
 
             default:
                 break;
         }
+
+
     }
+
+
 
     lwgOnUpdate(): void {
         this.self.y += 1;

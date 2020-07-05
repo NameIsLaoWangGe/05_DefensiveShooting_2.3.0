@@ -42,11 +42,11 @@ export default class UIMain extends lwg.Admin.Scene {
         return enemy;
     }
 
-    createBullet(): Laya.Sprite {
+    createBullet(x, y): Laya.Sprite {
         let bullet: Laya.Sprite;
         bullet = Laya.Pool.getItemByCreateFun('bullet', this.Bullet.create, this.Bullet);
         this.self['BulletParent'].addChild(bullet);
-        bullet.pos(this.self['Protagonist'].x, this.self['Protagonist'].y);
+        bullet.pos(x, y);
         bullet.zOrder = 0;
         bullet.addComponent(UIMain_Bullet);
 
@@ -73,13 +73,16 @@ export default class UIMain extends lwg.Admin.Scene {
     }
 
     btnOnClick(): void {
-        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnYellow'], this, null, null, this.clickUp, null);
-        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnBlue'], this, null, null, this.clickUp, null);
-        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnGreen'], this, null, null, this.clickUp, null);
+        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
+        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
+        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
     }
 
-    clickUp(e: Laya.Event): void {
-        switch (e.currentTarget.name) {
+    touchColor: Laya.Sprite;
+    clickDwon(e: Laya.Event): void {
+        this.touchColor = e.currentTarget;
+        console.log(this.touchColor);
+        switch (this.touchColor.name) {
             case 'BtnYellow':
                 this.launchType = lwg.Enum.bulletType.yellow;
                 this.self['BtnYellow'].scale(1.1, 1.1);
@@ -104,12 +107,35 @@ export default class UIMain extends lwg.Admin.Scene {
         }
     }
 
+    onStageMouseUp(e: Laya.Event): void {
+        let x = e.stageX;
+        let y = e.stageY;
+        let point = new Laya.Point(x, y);
+        // console.log(point);
+        if (this.touchColor !== null) {
+            let distance = point.distance(this.touchColor.x, this.touchColor.y);
+            if (distance > 100) {
+                let bullet = this.createBullet(this.touchColor.x, this.touchColor.y) as Laya.Sprite;
+                // 赋予方向向量
+                let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
+                movePoint.normalize();
+                // console.log(movePoint);
+                bullet.getComponent(UIMain_Bullet).movePoint = movePoint;
+                console.log(bullet.getComponent(UIMain_Bullet).movePoint);
+            }
+            this.touchColor = null;
+        }
+
+
+
+    }
+
 
     timer: number = 0;
     lwgOnUpdate(): void {
         if (lwg.Global._gameStart) {
             this.timer++;
-            if (this.timer % 60 === 0) {
+            if (this.timer % 180 === 0) {
                 this.createEnemy();
             }
         }

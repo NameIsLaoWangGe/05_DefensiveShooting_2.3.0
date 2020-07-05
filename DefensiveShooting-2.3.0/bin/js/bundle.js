@@ -1736,6 +1736,10 @@
         })(PalyAudio = lwg.PalyAudio || (lwg.PalyAudio = {}));
         let Tools;
         (function (Tools) {
+            function toHexString(r, g, b) {
+                return ("00000" + (r << 16 | g << 8 | b).toString(16)).slice(-6);
+            }
+            Tools.toHexString = toHexString;
             function drawPieMask(parent, startAngle, endAngle) {
                 parent.cacheAs = "bitmap";
                 let drawPieSpt = new Laya.Sprite();
@@ -1954,9 +1958,7 @@
             if (lwg.Global._gameStart) {
                 this.timer++;
                 if (this.timer % 10 === 0) {
-                    if (this.selfScene['UIMain'].launchType) {
-                        this.selfScene[lwg.Admin.SceneName.UIMain].createBullet();
-                    }
+                    if (this.selfScene['UIMain'].launchType) ;
                 }
             }
         }
@@ -1991,25 +1993,12 @@
             }
         }
         lwgOnUpdate() {
-            let point;
-            if (this.targetEnemy.parent) {
-                this.bulletState = 1;
-                point = new Laya.Point(this.self.x - this.targetEnemy.x, this.self.y - this.targetEnemy.y);
-            }
-            else {
-                if (this.bulletState === 1) {
-                    point = new Laya.Point(this.selfScene['Protagonist'].x - this.self.x, this.selfScene['Protagonist'].y - this.self.y);
-                }
-                else {
+            if (this.movePoint) {
+                this.self.x -= this.speed * this.movePoint.x;
+                this.self.y -= this.speed * this.movePoint.y;
+                if (this.self.y < -100) {
                     this.self.removeSelf();
-                    return;
                 }
-            }
-            point.normalize();
-            this.self.x -= this.speed * point.x;
-            this.self.y -= this.speed * point.y;
-            if (this.self.y < -100) {
-                this.self.removeSelf();
             }
         }
     }
@@ -2038,11 +2027,11 @@
             this.bulletNum++;
             return enemy;
         }
-        createBullet() {
+        createBullet(x, y) {
             let bullet;
             bullet = Laya.Pool.getItemByCreateFun('bullet', this.Bullet.create, this.Bullet);
             this.self['BulletParent'].addChild(bullet);
-            bullet.pos(this.self['Protagonist'].x, this.self['Protagonist'].y);
+            bullet.pos(x, y);
             bullet.zOrder = 0;
             bullet.addComponent(UIMain_Bullet);
             let pic = bullet.getChildByName('Pic');
@@ -2065,12 +2054,14 @@
             return bullet;
         }
         btnOnClick() {
-            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnYellow'], this, null, null, this.clickUp, null);
-            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnBlue'], this, null, null, this.clickUp, null);
-            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnGreen'], this, null, null, this.clickUp, null);
+            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
+            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
+            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
         }
-        clickUp(e) {
-            switch (e.currentTarget.name) {
+        clickDwon(e) {
+            this.touchColor = e.currentTarget;
+            console.log(this.touchColor);
+            switch (this.touchColor.name) {
                 case 'BtnYellow':
                     this.launchType = lwg.Enum.bulletType.yellow;
                     this.self['BtnYellow'].scale(1.1, 1.1);
@@ -2093,10 +2084,26 @@
                     break;
             }
         }
+        onStageMouseUp(e) {
+            let x = e.stageX;
+            let y = e.stageY;
+            let point = new Laya.Point(x, y);
+            if (this.touchColor !== null) {
+                let distance = point.distance(this.touchColor.x, this.touchColor.y);
+                if (distance > 100) {
+                    let bullet = this.createBullet(this.touchColor.x, this.touchColor.y);
+                    let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
+                    movePoint.normalize();
+                    bullet.getComponent(UIMain_Bullet).movePoint = movePoint;
+                    console.log(bullet.getComponent(UIMain_Bullet).movePoint);
+                }
+                this.touchColor = null;
+            }
+        }
         lwgOnUpdate() {
             if (lwg.Global._gameStart) {
                 this.timer++;
-                if (this.timer % 60 === 0) {
+                if (this.timer % 180 === 0) {
                     this.createEnemy();
                 }
             }
@@ -2180,7 +2187,7 @@
     GameConfig.sceneRoot = "";
     GameConfig.debug = false;
     GameConfig.stat = true;
-    GameConfig.physicsDebug = true;
+    GameConfig.physicsDebug = false;
     GameConfig.exportSceneToJson = true;
     GameConfig.init();
 

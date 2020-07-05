@@ -8,6 +8,9 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
     bulletState: number;
     /**子弹类型*/
     bulletType: string;
+
+    /**移动方向的单位向量*/
+    movePoint: Laya.Point;
     lwgInit(): void {
         this.bulletState = 0;
         let enemy = (this.selfScene['EnemyParent'] as Laya.Sprite).getChildAt(0) as Laya.Sprite;
@@ -34,24 +37,26 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
 
     speed: number = 20;
     lwgOnUpdate(): void {
-        let point;
-        if (this.targetEnemy.parent) {
-            this.bulletState = 1;
-            point = new Laya.Point(this.self.x - this.targetEnemy.x, this.self.y - this.targetEnemy.y);
-        } else {
-            if (this.bulletState === 1) {
-                point = new Laya.Point(this.selfScene['Protagonist'].x - this.self.x, this.selfScene['Protagonist'].y - this.self.y);
-            } else {
-                this.self.removeSelf();
-                return;
-            }
-        }
-        point.normalize();
-        this.self.x -= this.speed * point.x;
-        this.self.y -= this.speed * point.y;
+        if (this.movePoint) {
+            //     let point;
+            //     if (this.targetEnemy.parent) {
+            //         this.bulletState = 1;
+            //         point = new Laya.Point(this.self.x - this.targetEnemy.x, this.self.y - this.targetEnemy.y);
+            //     } else {
+            //         if (this.bulletState === 1) {
+            //             point = new Laya.Point(this.selfScene['Protagonist'].x - this.self.x, this.selfScene['Protagonist'].y - this.self.y);
+            //         } else {
+            //             this.self.removeSelf();
+            //             return;
+            //         }
+            //     }
+            //     point.normalize();
+            this.self.x -= this.speed * this.movePoint.x;
+            this.self.y -= this.speed * this.movePoint.y;
 
-        if (this.self.y < -100) {
-            this.self.removeSelf();
+            if (this.self.y < -100) {
+                this.self.removeSelf();
+            }
         }
     }
 }

@@ -1,6 +1,0 @@
-{
-  "code": "import { lwg } from \"../Lwg_Template/lwg\";\r\nexport default class UIMain_Enemy extends lwg.Admin.Person {\r\n    lwgInit() {\r\n        let num = this.self.getChildByName('Num');\r\n        num.text = (Math.floor(Math.random() * 10) + 1).toString();\r\n        let pic = this.self.getChildByName('Pic');\r\n        let rand = Math.floor(Math.random() * 3);\r\n        switch (rand) {\r\n            case 0:\r\n                pic.skin = lwg.Enum.enemySkin.yellow;\r\n                this.enemyType = lwg.Enum.enemyType.yellow;\r\n                break;\r\n            case 1:\r\n                pic.skin = lwg.Enum.enemySkin.bule;\r\n                this.enemyType = lwg.Enum.enemyType.bule;\r\n                break;\r\n            case 2:\r\n                pic.skin = lwg.Enum.enemySkin.green;\r\n                this.enemyType = lwg.Enum.enemyType.green;\r\n                break;\r\n            default:\r\n                break;\r\n        }\r\n    }\r\n    lwgOnUpdate() {\r\n        this.self.y += 1;\r\n        if (this.self.y >= this.selfScene['Protagonist'].y) {\r\n            this.self.removeSelf();\r\n        }\r\n    }\r\n}\r\n",
-  "references": [
-    "F:/Work/Game/05_DefensiveShooting_2.3.0/project/DefensiveShooting-2.3.0/src/script/Lwg_Template/lwg.ts"
-  ]
-}
