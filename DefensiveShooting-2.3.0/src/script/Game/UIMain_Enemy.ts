@@ -1,6 +1,6 @@
 import { lwg } from "../Lwg_Template/lwg";
 
-export default class UIMain_Enemy extends lwg.Admin.Person {
+export default class UIMain_Enemy extends lwg.Admin.Object {
 
     /**怪物类型*/
     enemyType: string;
@@ -32,11 +32,7 @@ export default class UIMain_Enemy extends lwg.Admin.Person {
             default:
                 break;
         }
-
-
     }
-
-
 
     lwgOnUpdate(): void {
         this.self.y += 1;

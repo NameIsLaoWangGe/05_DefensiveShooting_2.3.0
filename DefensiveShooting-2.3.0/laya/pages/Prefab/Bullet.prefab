@@ -18,7 +18,7 @@
             "x":15,
             "type":"Image",
             "searchKey":"Image,Pic",
-            "props":{"width":50,"skin":"Frame/UI/ui_circle_c_008.png","presetID":2,"preset":"laya/pages/Prefab/Bullet.prefab","name":"Pic","height":50},
+            "props":{"width":50,"skin":"Frame/UI/ui_circle_006.png","presetID":2,"preset":"laya/pages/Prefab/Bullet.prefab","name":"Pic","height":50},
             "nodeParent":12,
             "label":"Pic",
             "isDirectory":false,

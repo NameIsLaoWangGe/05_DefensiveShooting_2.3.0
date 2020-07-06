@@ -26,6 +26,8 @@ export default class UIMain extends lwg.Admin.Scene {
         this.bulletNum = 0;
         this.self['Protagonist'].addComponent(UIMain_Protagonist);
         lwg.Global._gameStart = true;
+        this.self['GuideLine'].alpha = 0;
+        this.touchColor = null;
     }
 
     /**子弹数量*/
@@ -73,37 +75,66 @@ export default class UIMain extends lwg.Admin.Scene {
     }
 
     btnOnClick(): void {
-        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
-        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
-        lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
+        lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
+        lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
+        lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
     }
 
     touchColor: Laya.Sprite;
     clickDwon(e: Laya.Event): void {
         this.touchColor = e.currentTarget;
-        console.log(this.touchColor);
+        // console.log(this.touchColor);
         switch (this.touchColor.name) {
             case 'BtnYellow':
                 this.launchType = lwg.Enum.bulletType.yellow;
                 this.self['BtnYellow'].scale(1.1, 1.1);
                 this.self['BtnBlue'].scale(1, 1);
                 this.self['BtnGreen'].scale(1, 1);
+
+                this.self['GuideLine'].x = this.self['BtnYellow'].x;
+                this.self['GuideLine'].y = this.self['BtnYellow'].y;
+                this.self['GuideLine'].alpha = 1;
                 break;
             case 'BtnBlue':
                 this.launchType = lwg.Enum.bulletType.bule;
                 this.self['BtnYellow'].scale(1, 1);
                 this.self['BtnBlue'].scale(1.1, 1.1);
                 this.self['BtnGreen'].scale(1, 1);
+
+                this.self['GuideLine'].x = this.self['BtnBlue'].x;
+                this.self['GuideLine'].y = this.self['BtnBlue'].y;
+                this.self['GuideLine'].alpha = 1;
+
+
                 break;
             case 'BtnGreen':
                 this.launchType = lwg.Enum.bulletType.green;
                 this.self['BtnYellow'].scale(1, 1);
                 this.self['BtnBlue'].scale(1, 1);
                 this.self['BtnGreen'].scale(1.1, 1.1);
+
+                this.self['GuideLine'].x = this.self['BtnGreen'].x;
+                this.self['GuideLine'].y = this.self['BtnGreen'].y;
+                this.self['GuideLine'].alpha = 1;
+
                 break;
 
             default:
                 break;
+        }
+    }
+    onStageMouseMove(e: Laya.Event): void {
+        if (this.touchColor !== null) {
+            let x = e.stageX;
+            let y = e.stageY;
+            let point = new Laya.Point(x, y);
+
+            // 赋予方向向量
+            let len = point.distance(this.touchColor.x, this.touchColor.y);
+            let line = this.self['GuideLine'].getChildByName('Line') as Laya.Image;
+            line.height = len;
+
+            let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
         }
     }
 
@@ -116,18 +147,15 @@ export default class UIMain extends lwg.Admin.Scene {
             let distance = point.distance(this.touchColor.x, this.touchColor.y);
             if (distance > 100) {
                 let bullet = this.createBullet(this.touchColor.x, this.touchColor.y) as Laya.Sprite;
-                // 赋予方向向量
                 let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
                 movePoint.normalize();
                 // console.log(movePoint);
                 bullet.getComponent(UIMain_Bullet).movePoint = movePoint;
                 console.log(bullet.getComponent(UIMain_Bullet).movePoint);
             }
-            this.touchColor = null;
         }
-
-
-
+        this.self['GuideLine'].alpha = 0;
+        this.touchColor = null;
     }
 
 

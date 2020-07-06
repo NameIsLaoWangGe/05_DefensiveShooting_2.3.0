@@ -7,6 +7,8 @@ export module lwg {
     export module Global {
         /**当前的关卡是第几关*/
         export let _gameLevel: number = 1;
+        /**当前的关卡是第几关*/
+        export let _yuanpifu: string = null;
         /**游戏是否处于开始状态*/
         export let _gameStart = false;
         /**当前剩余行动力的数量*/
@@ -16,10 +18,20 @@ export module lwg {
         /**当前是否可以免体力进入一次*/
         export let _exemptEx: boolean = true;
 
+        /**用于今天是否进行了热门分享的日期*/
+        export let _hotShareTime: number;
+        /**当前是否可以免体力进入一次*/
+        export let _hotShare: boolean = true;
+
         /**当前免费双击关卡提示，只要当前日期和下次日期不同，说明不是同一天，则给予一次免体力进入彩蛋机会*/
         export let _freeHintTime: number;
         /**当前是否可以免体力进入一次*/
         export let _freetHint: boolean = true;
+
+        /**记录上传体力的时间，用于对比下次进入游戏时时间差，补偿多少体力*/
+        export let _addExDate: number;
+        export let _addExHours: number;
+        export let _addMinutes: number;
 
         /**最后一次被拾取的房间，用于被吸附到另一个房间*/
         export let _roomPickup: Laya.Image;
@@ -27,43 +39,42 @@ export module lwg {
         export let _CustomsNum: number = 999;
         /**关闭舞台点击事件*/
         export let _stageClick: boolean = true;
+        /**限定皮肤界面是否打开了*/
+        export let _openXD: boolean = false;
 
         /**在体力提示界面中，用于判断在失败界面时，判断从哪个按钮进去，是通过重来按钮还是下一关按钮进来的*/
         export let intoBtn: string;
-        /**用于免费提示彩蛋中控制界面弹出的样式*/
-        export let intoMain: string;
 
         /**当前金币总数数量*/
         export let _goldNum = 0;
-        /**关卡数据表*/
-        export let _levelsData: any;
+        /**提示内容结合*/
+        export let _hintDec: any;
 
-        /**过关提示的描述*/
-        export let _hintDec: any
-        /**声音开关*/
-        export let _voiceSwitch: boolean = true;
+        /**互推开关*/
+        export let _elect: boolean = true;
+
         /**手机震动开关*/
         export let _shakeSwitch: boolean = true;
 
+        /**某些按钮延迟出现时间*/
+        export let _btnDelayed: number = 2000;
+
         /**当前选中的皮肤样式*/
-        export let _currentPifu: string;
+        export let _currentPifu: string = '01_gongzhu';
         /**当前拥有的皮肤名称集合*/
-        export let _havePifu: Array<string>;
+        export let _havePifu: Array<string> = ['01_gongzhu'];
         /**当前未拥有皮肤名称集合*/
         export let _notHavePifu: Array<string>;
-        /**当前未拥有皮肤名称，删除超人的皮肤*/
-        export let _notHavePifuSubChaoren: Array<string>;
+        /**当前未拥有皮肤名称，删除限定的皮肤，是最后一个皮肤*/
+        export let _notHavePifuSubXD: Array<string> = [];
         /**所有的皮肤的和排列顺序*/
-        export let _allPifu: Array<string> = ['01_xiaofu', '02_konglong', '03_xueren', '04_qipao', '05_qianxun', '06_lvyifu', '07_maozi', '08_lufei', '09_chaoren'];
+        export let _allPifu: Array<string> = ['01_gongzhu', '02_chiji', '03_change', '04_huiguniang', '05_tianshi', '06_xiaohongmao', '07_xiaohuangya', '08_zhenzi', '09_aisha'];
 
         /**购买次数,随着购买次数的增加，消耗金币也会增加,超人皮肤是看广告获得，暂时不可买到*/
-        export let _buyNum: number;
+        export let _buyNum: number = 1;
 
         /**限定皮肤剩余点击看广告的次数*/
-        export let _watchAdsNum: number;
-
-        /**是否接入了广告*/
-        export let _whetherAdv: boolean;
+        export let _watchAdsNum: number = 0;
 
         /**当前在游戏结束后，看广告的模式*/
         export let _gameOverAdvModel: number;
@@ -74,6 +85,36 @@ export module lwg {
         /**屏幕震动*/
         export function _vibratingScreen(): void {
 
+        }
+        /**找出还没有获得的皮肤,不包括限定皮肤*/
+        export function notHavePifuSubXD(): void {
+            // 所有皮肤赋值给新数组
+            let allArray = [];
+            for (let i = 0; i < lwg.Global._allPifu.length; i++) {
+                const element = lwg.Global._allPifu[i];
+                allArray.push(element);
+            }
+            // 删除已经有的皮肤，得出还没有的皮肤
+            for (let j = 0; j < allArray.length; j++) {
+                let element1 = allArray[j];
+                for (let k = 0; k < lwg.Global._havePifu.length; k++) {
+                    let element2 = lwg.Global._havePifu[k];
+                    if (element1 === element2) {
+                        allArray.splice(j, 1);
+                        j--;
+                    }
+                }
+            }
+            lwg.Global._notHavePifu = allArray;
+            // 去除超人皮肤
+            for (let k = 0; k < allArray.length; k++) {
+                const element = allArray[k];
+                if (element === '09_aisha') {
+                    allArray.splice(k, 1);
+                }
+            }
+            lwg.Global._notHavePifuSubXD = allArray;
+            // console.log(lwg.Global._notHavePifuSubXD);
         }
 
         /**指代当前界面的等级节点*/
@@ -145,7 +186,7 @@ export module lwg {
                 parent.addChild(sp);
                 sp.pos(671, 273);
                 sp.zOrder = 0;
-                Click.on(Enum.ClickType.largen, null, sp, null, null, null, btnSetUp, null);
+                Click.on(Click.ClickType.largen, null, sp, null, null, null, btnSetUp, null);
                 BtnSetNode = sp;
                 BtnSetNode.name = 'BtnSetNode';
             }));
@@ -156,7 +197,7 @@ export module lwg {
             Admin._openScene('UISet', null, null, null);
         }
 
-        /**指代当前界面的金币资源按钮*/
+        /**指代当前界面的金币资源*/
         export let GoldNumNode: Laya.Sprite;
         /**
          * 创建通用剩余金币资源数量prefab
@@ -212,11 +253,11 @@ export module lwg {
                 _prefab.json = prefab;
                 sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
                 parent.addChild(sp);
-                sp.pos(645, 137);
+                sp.pos(645, 167);
                 sp.zOrder = 0;
                 BtnPauseNode = sp;
                 BtnPauseNode.name = 'BtnPauseNode';
-                Click.on(Enum.ClickType.largen, null, sp, null, null, null, btnPauseUp, null);
+                Click.on(Click.ClickType.largen, null, sp, null, null, null, btnPauseUp, null);
             }));
         }
         export function btnPauseUp(event) {
@@ -224,7 +265,6 @@ export module lwg {
             event.currentTarget.scale(1, 1);
             lwg.Admin._openScene('UIPause', null, null, null);
         }
-
 
         /**指代游戏界面提示按钮节点*/
         export let BtnHintNode: Laya.Sprite;
@@ -239,18 +279,19 @@ export module lwg {
                 _prefab.json = prefab;
                 sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
                 parent.addChild(sp);
-                sp.pos(645, 273);
+                sp.pos(645, 293);
                 sp.zOrder = 0;
                 BtnHintNode = sp;
                 BtnHintNode.name = 'BtnHintNode';
-                Click.on(Enum.ClickType.largen, null, sp, null, null, null, btnHintUp, null);
+                Click.on(Click.ClickType.largen, null, sp, null, null, null, btnHintUp, null);
             }));
         }
         export function btnHintUp(event) {
             event.currentTarget.scale(1, 1);
             event.stopPropagation();
-            // lwg.Admin._openScene('UIPause', null, null, null);
-            lwg.Global._createHint(lwg.Enum.HintType.noHint);
+
+            Admin._openScene(Admin.SceneName.UISmallHint, null, null, f => { });
+
         }
 
         /**指代当前界面的重来按钮*/
@@ -276,26 +317,85 @@ export module lwg {
                 _prefab.json = prefab;
                 sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
                 parent.addChild(sp);
-                sp.pos(645, 404);
+                sp.pos(645, 409);
                 sp.zOrder = 0;
-                Click.on(Enum.ClickType.largen, null, sp, null, null, null, btnAgainUp, null);
+                Click.on(Click.ClickType.largen, null, sp, null, btnAgainUp, null, null, null);
                 BtnAgainNode = sp;
             }));
         }
         export function btnAgainUp(event): void {
             event.stopPropagation();
-            refreshNum++;
             event.currentTarget.scale(1, 1);
+            if (!_gameStart) {
+                return;
+            }
+            refreshNum++;
             Admin._refreshScene();
+        }
+
+        /**动态创建一个互推*/
+        export let P201_01Node: Laya.Sprite;
+        /**
+         * 创建通用重来prefab
+         * @param parent 父节点
+         * @param x x位置
+         * @param y y位置
+         * @param soundUrl 音效的地址
+         * @param caller 指向脚本（this）引用
+         * @param down 按下函数
+         * @param move 移动函数
+         * @param up 抬起函数
+         * @param out 出屏幕函数
+         */
+        export function _createP201_01(parent): void {
+            let sp: Laya.Sprite;
+            Laya.loader.load('prefab/P201.json', Laya.Handler.create(this, function (prefab: Laya.Prefab) {
+                let _prefab = new Laya.Prefab();
+                _prefab.json = prefab;
+                sp = Laya.Pool.getItemByCreateFun('P201', _prefab.create, _prefab);
+                parent.addChild(sp);
+                sp.pos(90, 225);
+                sp.zOrder = 65;
+                P201_01Node = sp;
+            }));
         }
 
         /**
          * 创建提示框prefab
          * @param type 类型，也就是提示文字类型
          */
-        export function _createHint(type): void {
+        export function _createHint_01(type): void {
             let sp: Laya.Sprite;
-            Laya.loader.load('prefab/HintPre.json', Laya.Handler.create(this, function (prefab: Laya.Prefab) {
+            Laya.loader.load('prefab/HintPre_01.json', Laya.Handler.create(this, function (prefab: Laya.Prefab) {
+                let _prefab = new Laya.Prefab();
+                _prefab.json = prefab;
+                sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
+                Laya.stage.addChild(sp);
+                sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
+                let dec = sp.getChildByName('dec') as Laya.Label;
+                dec.text = Enum.HintDec[type];
+                sp.zOrder = 100;
+
+                dec.alpha = 0;
+                Animation.scale_Alpha(sp, 0, 1, 0, 1, 1, 1, 200, 0, f => {
+                    Animation.fadeOut(dec, 0, 1, 150, 0, f => {
+                        Animation.fadeOut(dec, 1, 0, 200, 800, f => {
+                            Animation.scale_Alpha(sp, 1, 1, 1, 1, 0, 0, 200, 0, f => {
+                                sp.removeSelf();
+                            });
+                        });
+                    });
+                });
+            }));
+        }
+
+        /**
+        * 创建提示框prefab
+        * @param type 类型，也就是提示文字类型
+        */
+        export function _createHint_02(type): void {
+            let sp: Laya.Sprite;
+            Laya.loader.load('prefab/HintPre_02.json', Laya.Handler.create(this, function (prefab: Laya.Prefab) {
                 let _prefab = new Laya.Prefab();
                 _prefab.json = prefab;
                 sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
@@ -313,9 +413,9 @@ export module lwg {
 
         /**
          * 创建体力消耗动画
-         * @param  func 回调函数
+         * @param  subEx 消耗多少体力值
         */
-        export function createConsumeEx(func): void {
+        export function createConsumeEx(subEx): void {
             let label = Laya.Pool.getItemByClass('label', Laya.Label) as Laya.Label;
             label.name = 'label';//标识符和名称一样
             Laya.stage.addChild(label);
@@ -329,9 +429,6 @@ export module lwg {
             lwg.Animation.fadeOut(label, 0, 1, 200, 150, f => {
                 lwg.Animation.leftRight_Shake(ExecutionNumNode, 15, 60, 0, null);
                 lwg.Animation.fadeOut(label, 1, 0, 600, 400, f => {
-                    if (func) {
-                        func();
-                    }
                 });
             });
         }
@@ -395,10 +492,14 @@ export module lwg {
                 '_execution': lwg.Global._execution,
                 '_exemptExTime': lwg.Global._exemptExTime,
                 '_freeHintTime': lwg.Global._freeHintTime,
-                // '_buyNum': lwg.Global._buyNum,
-                // '_currentPifu': lwg.Global._currentPifu,
-                // '_havePifu': lwg.Global._havePifu,
-                // '_watchAdsNum': lwg.Global._watchAdsNum,
+                '_hotShareTime': lwg.Global._hotShareTime,
+                '_addExDate': lwg.Global._addExDate,
+                '_addExHours': lwg.Global._addExHours,
+                '_addMinutes': lwg.Global._addMinutes,
+                '_buyNum': lwg.Global._buyNum,
+                '_currentPifu': lwg.Global._currentPifu,
+                '_havePifu': lwg.Global._havePifu,
+                '_watchAdsNum': lwg.Global._watchAdsNum,
                 // '_gameOverAdvModel': lwg.Global._gameOverAdvModel,
             }
             // 转换成字符串上传
@@ -423,11 +524,15 @@ export module lwg {
                 lwg.Global._goldNum = 0;
                 lwg.Global._execution = 15;
                 lwg.Global._exemptExTime = null;
-                lwg.Global._freeHintTime = null
-                // lwg.Global._buyNum = 1;
-                // lwg.Global._currentPifu = Enum.PifuAllName[0];
-                // lwg.Global._havePifu = ['01_xiaofu'];
-                // lwg.Global._watchAdsNum = 0;
+                lwg.Global._freeHintTime = null;
+                lwg.Global._hotShareTime = null;
+                lwg.Global._addExDate = (new Date).getDate();
+                lwg.Global._addExHours = (new Date).getHours();
+                lwg.Global._addMinutes = (new Date).getMinutes();
+                lwg.Global._buyNum = 1;
+                lwg.Global._currentPifu = Enum.PifuAllName[0];
+                lwg.Global._havePifu = ['01_gongzhu'];
+                lwg.Global._watchAdsNum = 0;
                 // lwg.Global._gameOverAdvModel = 1;
                 // lwg.Global._whetherAdv = false;
                 return null;
@@ -454,6 +559,13 @@ export module lwg {
             UISet = 'UISet',
             UIPifu = 'UIPifu',
             UIPuase = 'UIPuase',
+            UIShare = 'UIShare',
+            UISmallHint = 'UISmallHint',
+            UIXDpifu = 'UIXDpifu',
+            UIPifuTry = 'UIPifuTry',
+            UIRedeem = 'UIRedeem',
+            UIAnchorXD = 'UIAnchorXD'
+
         }
         /**游戏当前的状态*/
         export enum GameState {
@@ -471,23 +583,37 @@ export module lwg {
         /**
           * 打开界面
           * @param name 界面名称
-          * @param cloesScene 需要关闭的场景，如果不需要关闭，传入null
           * @param zOder 指定层级
+          * @param cloesScene 需要关闭的场景，如果不需要关闭，传入null
           * @param func 回调函数
          */
         export function _openScene(openName: string, zOder: number, cloesScene: Laya.Scene, func): void {
             Laya.Scene.load('Scene/' + openName + '.json', Laya.Handler.create(this, function (scene: Laya.Scene) {
                 scene.width = Laya.stage.width;
                 scene.height = Laya.stage.height;
-                // Laya.stage.addChildAt(scene, zOder);
-                Laya.stage.addChild(scene);
+                if (zOder) {
+                    Laya.stage.addChildAt(scene, zOder);
+                } else {
+                    Laya.stage.addChild(scene);
+                }
                 scene.name = openName;
                 _sceneControl[openName] = scene;
-                // 背景图自适应
-                let background = scene.getChildByName('Background') as Laya.Image;
+                // 背景图自适应并且居中
+                let background = scene.getChildByName('background') as Laya.Image;
                 if (background) {
-                    background.width = Laya.stage.width;
-                    background.height = Laya.stage.height;
+                    if (openName.substring(0, 6) === 'UIMain') {
+                        background.width = null;
+                        background.height = null;
+                        background.x = 360,
+                            background.y = 640;
+                        // background.pivotX = background.width / 2;
+                        // background.pivotY = background.height / 2;
+                        // background.x = Laya.stage.width / 2;
+                        // background.y = Laya.stage.height / 2;
+                    } else {
+                        background.width = Laya.stage.width;
+                        background.height = Laya.stage.height;
+                    }
                 }
                 // console.log('打开' + openName + '场景');
                 if (cloesScene) {
@@ -516,13 +642,8 @@ export module lwg {
             } else {
                 num = lwg.Global._gameLevel;
             }
-            openLevelNum = num;
+            openLevelNum = lwg.Global._gameLevel;
             // 格式
-            if (num <= 9) {
-                sceneName = 'UIMain_00' + num;
-            } else if (9 < num || num <= 99) {
-                sceneName = 'UIMain_0' + num;
-            }
             if (num <= 9) {
                 sceneName = 'UIMain_00' + num;
             } else if (9 < num || num <= 99) {
@@ -541,10 +662,10 @@ export module lwg {
         export function _openNumCustom(num): void {
             let sceneName;
             // 大于30关后从第一关开始循环
+            openLevelNum = num;
             if (num > 30) {
                 num = num - 30;
             }
-            openLevelNum = num;
             // 格式
             if (num <= 9) {
                 sceneName = 'UIMain_00' + num;
@@ -557,9 +678,13 @@ export module lwg {
                 sceneName = 'UIMain_0' + num;
             }
             openCustomName = sceneName;
-            console.log('打开' + sceneName);
             _openScene(sceneName, null, null, f => {
                 lwg.Global._gameStart = true;
+
+                if (lwg.Global._yuanpifu !== null) {
+                    Global._currentPifu = lwg.Global._yuanpifu;
+                    lwg.Global._yuanpifu = null;
+                }
             });
         }
 
@@ -586,32 +711,43 @@ export module lwg {
             });
         }
 
+        /**打开下一关场景，并且上传信息
+         * @param subEx 消耗多少体力值
+        */
+        export function _nextCustomScene(subEx): void {
+            if (subEx > 0) {
+                Global._execution -= subEx;
+                let num = Global.ExecutionNumNode.getChildByName('Num') as Laya.FontClip;
+                num.value = Global._execution.toString();
+                Global._createHint_01(lwg.Enum.HintType.consumeEx);
+                Global.createConsumeEx(subEx);
+            }
+
+            if (Admin.openLevelNum >= Global._gameLevel) {
+                Admin._closeCustomScene();
+                Global._gameLevel++;
+                Admin._openGLCustoms();
+            } else {
+                Admin._closeCustomScene();
+                Admin.openLevelNum++;
+                Admin._openLevelNumCustom();
+            }
+            LocalStorage.addData();
+        }
+
         /**
           * 刷新当前实际打开的关卡场景
           **/
         export function _refreshScene(): void {
-            // let sceneName;
-            // if (lwg.Global._gameLevel <= 9) {
-            //     sceneName = 'UIMain_00' + lwg.Global._gameLevel;
-            // } else if (9 < lwg.Global._gameLevel || lwg.Global._gameLevel <= 99) {
-            //     sceneName = 'UIMain_0' + lwg.Global._gameLevel;
-            // }
             _sceneControl[openCustomName].close();
             _openScene(openCustomName, null, null, null);
         }
-
 
         /**
         * 关闭当前实际打开的关卡场景
         **/
         export function _closeCustomScene(): void {
             console.log('关闭当前关卡' + openCustomName);
-            // let sceneName;
-            // if (gameLevel <= 9) {
-            //     sceneName = 'UIMain_00' + gameLevel;
-            // } else if (9 < gameLevel || gameLevel <= 99) {
-            //     sceneName = 'UIMain_0' + gameLevel;
-            // }
             _sceneControl[openCustomName].close();
         }
 
@@ -674,6 +810,34 @@ export module lwg {
                         ADManager.TAPoint(TaT.PageLeave, 'pausepage');
                     }
                     break;
+                case SceneName.UIShare:
+                    if (type === 'on') {
+                        ADManager.TAPoint(TaT.PageEnter, 'sharepage');
+                    } else if (type === 'dis') {
+                        ADManager.TAPoint(TaT.PageLeave, 'sharepage');
+                    }
+                    break;
+                case SceneName.UIPifu:
+                    if (type === 'on') {
+                        ADManager.TAPoint(TaT.PageEnter, 'skinpage');
+                    } else if (type === 'dis') {
+                        ADManager.TAPoint(TaT.PageLeave, 'skinpage');
+                    }
+                    break;
+                case SceneName.UIPifuTry:
+                    if (type === 'on') {
+                        ADManager.TAPoint(TaT.PageEnter, 'skintrypage');
+                    } else if (type === 'dis') {
+                        ADManager.TAPoint(TaT.PageLeave, 'skintrypage');
+                    }
+                    break;
+                case SceneName.UIXDpifu:
+                    if (type === 'on') {
+                        ADManager.TAPoint(TaT.PageEnter, 'limitskinpage');
+                    } else if (type === 'dis') {
+                        ADManager.TAPoint(TaT.PageLeave, 'limitskinpage');
+                    }
+                    break;
                 default:
 
                     break;
@@ -701,7 +865,11 @@ export module lwg {
                 this.lwgInit();
                 this.btnOnClick();
                 this.adaptive();
+                this.openAni();
                 // printPoint('on', this.calssName);
+            }
+            /**场景内全局节点*/
+            selfVars(): void {
             }
             /**游戏当前的状态*/
             gameState(calssName): void {
@@ -727,9 +895,6 @@ export module lwg {
             lwgInit(): void {
                 // console.log('父类的初始化！');
             }
-            selfVars(): void {
-
-            }
             /**点击事件注册*/
             btnOnClick(): void {
             }
@@ -745,9 +910,7 @@ export module lwg {
             onUpdate(): void {
                 this.lwgOnUpdate();
             }
-            lwgOnUpdate(): void {
-
-            }
+            lwgOnUpdate() { };
             onDisable(): void {
                 // printPoint('dis', this.calssName);
                 this.lwgDisable();
@@ -779,23 +942,10 @@ export module lwg {
                 this.self[calssName] = this;
                 this.lwgInit();
             }
-
             /**初始化，在onEnable中执行，重写即可覆盖*/
             lwgInit(): void {
+                console.log('父类的初始化！');
             }
-
-            onUpdate(): void {
-                this.lwgOnUpdate();
-            }
-
-            lwgOnUpdate(): void { }
-
-            onDisable(): void {
-                this.lwgOnDisable();
-            }
-
-            lwgOnDisable(): void { }
-
         }
 
         /**物件通用父类*/
@@ -818,80 +968,60 @@ export module lwg {
                 this.self[calssName] = this;
                 this.rig = this.self.getComponent(Laya.RigidBody);
                 this.lwgInit();
+                this.btnOnClick();
             }
             /**初始化，在onEnable中执行，重写即可覆盖*/
             lwgInit(): void {
             }
-
+            /**点击事件注册*/
+            btnOnClick(): void {
+            }
             onUpdate(): void {
                 this.lwgOnUpdate();
             }
+            lwgOnUpdate(): void {
 
-            lwgOnUpdate(): void { }
-
+            }
             onDisable(): void {
-                this.lwgOnDisable();
+                this.lwgDisable();
+            }
+            /**离开时执行，子类不执行onDisable，只执行lwgDisable*/
+            lwgDisable(): void {
+
             }
 
-            lwgOnDisable(): void { }
-
         }
     }
 
-    /**提示模块*/
-    export module Hint {
-        enum SkinUrl {
-            'ui_square_012',
-        }
-        /**
-          * 创建提示框prefab
-          * @param type 类型，也就是提示文字类型
-         */
-        export function _createHint(type): void {
-            let sp: Laya.Sprite = new Laya.Sprite();
-            let pic: Laya.Image = new Laya.Image();
-            pic.skin = SkinUrl[0];
-            Laya.stage.addChild(sp);
-            sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
-            let dec = sp.getChildByName('dec') as Laya.Label;
-            dec.text = Enum.HintDec[type];
-            sp.zOrder = 100;
-
-            Animation.HintAni_01(sp, 100, 100, 1000, 50, 100, f => {
-                sp.removeSelf();
-            });
-        }
-    }
-
-    /**特效模块*/
     export module Effects {
         /**特效元素的图片地址，所有项目都可用*/
         export enum SkinUrl {
-            'Frame/Effects/cir_white.png',
-            "Frame/Effects/cir_black.png",
-            "Frame/Effects/cir_blue.png",
-            "Frame/Effects/cir_bluish.png",
-            "Frame/Effects/cir_cyan.png",
-            "Frame/Effects/cir_grass.png",
-            "Frame/Effects/cir_green.png",
-            "Frame/Effects/cir_orange.png",
-            "Frame/Effects/cir_pink.png",
-            "Frame/Effects/cir_purple.png",
-            "Frame/Effects/cir_red.png",
-            "Frame/Effects/cir_yellow.png",
+            'Effects/cir_white.png',
+            "Effects/cir_black.png",
+            "Effects/cir_blue.png",
+            "Effects/cir_bluish.png",
+            "Effects/cir_cyan.png",
+            "Effects/cir_grass.png",
+            "Effects/cir_green.png",
+            "Effects/cir_orange.png",
+            "Effects/cir_pink.png",
+            "Effects/cir_purple.png",
+            "Effects/cir_red.png",
+            "Effects/cir_yellow.png",
 
-            "Frame/Effects/star_black.png",
-            "Frame/Effects/star_blue.png",
-            "Frame/Effects/star_bluish.png",
-            "Frame/Effects/star_cyan.png",
-            "Frame/Effects/star_grass.png",
-            "Frame/Effects/star_green.png",
-            "Frame/Effects/star_orange.png",
-            "Frame/Effects/star_pink.png",
-            "Frame/Effects/star_purple.png",
-            "Frame/Effects/star_red.png",
-            "Frame/Effects/star_white.png",
-            "Frame/Effects/star_yellow.png"
+            "Effects/star_black.png",
+            "Effects/star_blue.png",
+            "Effects/star_bluish.png",
+            "Effects/star_cyan.png",
+            "Effects/star_grass.png",
+            "Effects/star_green.png",
+            "Effects/star_orange.png",
+            "Effects/star_pink.png",
+            "Effects/star_purple.png",
+            "Effects/star_red.png",
+            "Effects/star_white.png",
+            "Effects/star_yellow.png",
+            "Effects/icon_biggold.png"
         }
 
         /**类粒子特效的通用父类*/
@@ -923,6 +1053,7 @@ export module lwg {
             startAlpha: number;
             /**初始角度*/
             startRotat: number;
+
 
             /**随机旋转方向*/
             startDir: number;
@@ -1001,6 +1132,7 @@ export module lwg {
                 }
             }
         }
+
         /**普通爆炸移动类*/
         export class commonExplosion extends lwg.Effects.EffectsBase {
             initProperty(): void {
@@ -1022,12 +1154,209 @@ export module lwg {
                 }
             }
         }
+
+        /**
+         * 创建单个金币动画
+         * @param parent 父节点
+         * @param quantity 数量
+         * @param x X轴位置
+         * @param y Y轴位置
+         * @param targeX 目标X位置
+         * @param targeY 目标Y位置
+         */
+        export function createAddGold(parent, index, x, y, targetX, targetY, func): void {
+            let delayed = 0;
+            let ele = Laya.Pool.getItemByClass('addGold', Laya.Image) as Laya.Image;
+            ele.name = 'addGold';//标识符和名称一样
+            let num = Math.floor(Math.random() * 12);
+            ele.alpha = 1;
+            ele.scale(1, 1);
+            ele.skin = SkinUrl[24];
+            parent.addChild(ele);
+            ele.zOrder = 60;
+            ele.pos(x, y);
+            let scirpt = ele.getComponent(AddGold);
+            if (!scirpt) {
+                ele.addComponent(AddGold);
+                let scirpt1 = ele.getComponent(AddGold);
+                scirpt1.line = index;
+                scirpt1.targetX = targetX;
+                scirpt1.targetY = targetY;
+                scirpt1.timer -= index * 3;
+                scirpt1.moveSwitch = true;
+                scirpt1.func = func;
+            } else {
+                scirpt.line = index;
+                scirpt.timer -= index * 3;
+                scirpt.targetX = targetX;
+                scirpt.targetY = targetY;
+                scirpt.moveSwitch = true;
+                scirpt.func = func;
+            }
+        }
+
+        /**炸开后再前往同一个地点，用于金币增加动画*/
+        export class AddGold extends lwg.Effects.EffectsBase {
+            /**属于那一列*/
+            line: number;
+            /**目标位置X*/
+            targetX: number;
+            /**目标位置Y*/
+            targetY: number;
+            /**回调函数*/
+            func: any
+            initProperty(): void {
+            }
+            moveRules(): void {
+                if (this.moveSwitch) {
+                    this.timer++;
+                    if (this.timer > 0) {
+                        lwg.Animation.move_Scale(this.self, 1, this.self.x, this.self.y, this.targetX, this.targetY, 0.35, 250, 0, f => {
+                            this.self.removeSelf();
+                            if (this.func !== null) {
+                                this.func();
+                            }
+                        });
+                        this.moveSwitch = false;
+                    }
+                }
+            }
+        }
+
+
+        /**
+          * 创建类似于烟花爆炸动画，四周爆炸随机散开
+          * @param parent 父节点
+          * @param quantity 数量
+          * @param x X轴位置
+          * @param y Y轴位置
+          */
+        export function createFireworks(parent, quantity, x, y): void {
+            for (let index = 0; index < quantity; index++) {
+                let ele = Laya.Pool.getItemByClass('fireworks', Laya.Image) as Laya.Image;
+                ele.name = 'fireworks';//标识符和名称一样
+                let num = Math.floor(Math.random() * 12);
+                ele.alpha = 1;
+                ele.skin = SkinUrl[num];
+                parent.addChild(ele);
+                ele.pos(x, y);
+                let scirpt = ele.getComponent(Fireworks);
+                if (!scirpt) {
+                    ele.addComponent(Fireworks);
+                }
+            }
+        }
+
+        /**类似烟花爆炸，速度逐渐减慢，并且有下降趋势*/
+        export class Fireworks extends lwg.Effects.EffectsBase {
+            initProperty(): void {
+                this.startAngle = 360 * Math.random();
+                this.startSpeed = 5 * Math.random() + 5;
+                this.startScale = 0.4 + Math.random() * 0.6;
+                this.accelerated = 0.1;
+                this.vanishTime = 200 + Math.random() * 10;
+            }
+            moveRules(): void {
+                this.timer++;
+                if (this.timer >= this.vanishTime * 3 / 5) {
+                    this.self.alpha -= 0.1;
+                }
+                if (this.timer >= this.vanishTime) {
+                    this.self.removeSelf();
+                } else {
+                    this.commonSpeedXYByAngle(this.startAngle, this.startSpeed);
+                }
+                if (this.self.scaleX < 0) {
+                    this.self.scaleX += 0.01;
+                } else if (this.self.scaleX >= this.startScale) {
+                    this.self.scaleX -= 0.01;
+                }
+            }
+        }
+
+        /**
+         * 创建左右喷彩带动画
+         * @param parent 父节点
+         * @param direction 方向
+         * @param quantity 数量
+         * @param x X轴位置
+         * @param y Y轴位置
+        */
+        export function createLeftOrRightJet(parent, direction, quantity, x, y): void {
+            for (let index = 0; index < quantity; index++) {
+                let ele = Laya.Pool.getItemByClass('Jet', Laya.Image) as Laya.Image;
+                ele.name = 'Jet';//标识符和名称一样
+                let num = 12 + Math.floor(Math.random() * 11);
+                ele.skin = SkinUrl[num];
+                ele.alpha = 1;
+                parent.addChild(ele);
+                ele.pos(x, y);
+                let scirpt = ele.getComponent(leftOrRightJet);
+                if (!scirpt) {
+                    ele.addComponent(leftOrRightJet);
+                    let scirpt1 = ele.getComponent(leftOrRightJet);
+                    scirpt1.direction = direction;
+                    scirpt1.initProperty();
+                } else {
+                    scirpt.direction = direction;
+                    scirpt.initProperty();
+                }
+            }
+        }
+        /**创建左右喷彩带动画类*/
+        export class leftOrRightJet extends lwg.Effects.EffectsBase {
+            direction: string;
+            randomRotate: number;
+            initProperty(): void {
+                if (this.direction === 'left') {
+                    this.startAngle = 100 * Math.random() - 90 + 45 - 10 - 20;
+                } else if (this.direction === 'right') {
+                    this.startAngle = 100 * Math.random() + 90 + 45 + 20;
+                }
+                this.startSpeed = 10 * Math.random() + 3;
+                this.startScale = 0.4 + Math.random() * 0.6;
+                this.accelerated = 0.1;
+                this.vanishTime = 300 + Math.random() * 50;
+                this.randomRotate = 1 + Math.random() * 20;
+            }
+            moveRules(): void {
+                this.timer++;
+                if (this.timer >= this.vanishTime * 3 / 5) {
+                    this.self.alpha -= 0.1;
+                }
+                if (this.timer >= this.vanishTime) {
+                    this.self.removeSelf();
+                } else {
+                    this.commonSpeedXYByAngle(this.startAngle, this.startSpeed);
+                    // this.self.y += this.accelerated * 10;
+                }
+
+                this.self.rotation += this.randomRotate;
+
+                if (this.self.scaleX < 0) {
+                    this.self.scaleX += 0.01;
+                } else if (this.self.scaleX >= this.startScale) {
+                    this.self.scaleX -= 0.01;
+                }
+            }
+        }
     }
+
 
     /**加载一些骨骼动画，在loding界面出现的时候执行skLoding()方法*/
     export module Sk {
+
         /**公主骨骼动画*/
         export let gongzhuTem: Laya.Templet = new Laya.Templet();
+        export let aishaTem: Laya.Templet = new Laya.Templet();
+        export let changeTem: Laya.Templet = new Laya.Templet();
+        export let chijiTem: Laya.Templet = new Laya.Templet();
+        export let huiguniangTem: Laya.Templet = new Laya.Templet();
+        export let tianshiTem: Laya.Templet = new Laya.Templet();
+        export let xiaohongmaoTem: Laya.Templet = new Laya.Templet();
+        export let xiaohuangyaTem: Laya.Templet = new Laya.Templet();
+        export let zhenziTem: Laya.Templet = new Laya.Templet();
+
         /**王子骨骼动画*/
         export let wangziTem: Laya.Templet = new Laya.Templet();
         /**狗骨骼动画*/
@@ -1040,64 +1369,111 @@ export module lwg {
         export let houmaTem: Laya.Templet = new Laya.Templet();
         /**猴子*/
         export let houziTem: Laya.Templet = new Laya.Templet();
-        /**房子动画*/
-        export let houseTem: Laya.Templet = new Laya.Templet();
 
         export function skLoding(): void {
             createGongzhuTem();
+            createAishaTem();
+            createChijiTem();
+            createChangeTem()
+            createHuiguniangTem();
+            createTianshiTem();
+            createXiaohongmaoTem();
+            createXiaohuangyaTem();
+            createZhenziTem();
+
             createWangziTem();
             createGouTem();
             createQingdi_01Tem();
             createQingdi_02Tem();
             createHoumaTem();
             createHouziTem();
-            createHouseTem();
         }
 
-        /**全部加载，如果遇到很多*/
+        /**全部加载*/
         export function createGongzhuTem(): void {
-            //创建动画模板
-            gongzhuTem.on(Laya.Event.COMPLETE, this, null);
+            gongzhuTem.on(Laya.Event.COMPLETE, this, onCompelet);
             gongzhuTem.on(Laya.Event.ERROR, this, onError);
             gongzhuTem.loadAni("SK/gongzhu.sk");
+
         }
+        export function createAishaTem(): void {
+            aishaTem.on(Laya.Event.COMPLETE, this, onCompelet);
+            aishaTem.on(Laya.Event.ERROR, this, onError);
+            aishaTem.loadAni("SK/aisha.sk");
+        }
+        export function createChangeTem(): void {
+            changeTem.on(Laya.Event.COMPLETE, this, onCompelet);
+            changeTem.on(Laya.Event.ERROR, this, onError);
+            changeTem.loadAni("SK/change.sk");
+        }
+        export function createChijiTem(): void {
+            chijiTem.on(Laya.Event.COMPLETE, this, onCompelet);
+            chijiTem.on(Laya.Event.ERROR, this, onError);
+            chijiTem.loadAni("SK/chiji.sk");
+        }
+        export function createHuiguniangTem(): void {
+            huiguniangTem.on(Laya.Event.COMPLETE, this, onCompelet);
+            huiguniangTem.on(Laya.Event.ERROR, this, onError);
+            huiguniangTem.loadAni("SK/huiguniang.sk");
+        }
+        export function createTianshiTem(): void {
+            tianshiTem.on(Laya.Event.COMPLETE, this, onCompelet);
+            tianshiTem.on(Laya.Event.ERROR, this, onError);
+            tianshiTem.loadAni("SK/tianshi.sk");
+        }
+        export function createXiaohongmaoTem(): void {
+            xiaohongmaoTem.on(Laya.Event.COMPLETE, this, onCompelet);
+            xiaohongmaoTem.on(Laya.Event.ERROR, this, onError);
+            xiaohongmaoTem.loadAni("SK/xiaohongmao.sk");
+        }
+        export function createXiaohuangyaTem(): void {
+            xiaohuangyaTem.on(Laya.Event.COMPLETE, this, onCompelet);
+            xiaohuangyaTem.on(Laya.Event.ERROR, this, onError);
+            xiaohuangyaTem.loadAni("SK/xiaohuangya.sk");
+        }
+        export function createZhenziTem(): void {
+            zhenziTem.on(Laya.Event.COMPLETE, this, onCompelet);
+            zhenziTem.on(Laya.Event.ERROR, this, onError);
+            zhenziTem.loadAni("SK/zhenzi.sk");
+        }
+
+
         export function createWangziTem(): void {
-            wangziTem.on(Laya.Event.COMPLETE, this, null);
+            wangziTem.on(Laya.Event.COMPLETE, this, onCompelet);
             wangziTem.on(Laya.Event.ERROR, this, onError);
             wangziTem.loadAni("SK/wangzi.sk");
         }
         export function createGouTem(): void {
-            gouTem.on(Laya.Event.COMPLETE, this, null);
+            gouTem.on(Laya.Event.COMPLETE, this, onCompelet);
             gouTem.on(Laya.Event.ERROR, this, onError);
             gouTem.loadAni("SK/gou.sk");
         }
         export function createQingdi_01Tem(): void {
-            qingdi_01Tem.on(Laya.Event.COMPLETE, this, null);
+            qingdi_01Tem.on(Laya.Event.COMPLETE, this, onCompelet);
             qingdi_01Tem.on(Laya.Event.ERROR, this, onError);
             qingdi_01Tem.loadAni("SK/qingdi.sk");
         }
         export function createQingdi_02Tem(): void {
-            qingdi_02Tem.on(Laya.Event.COMPLETE, this, null);
+            qingdi_02Tem.on(Laya.Event.COMPLETE, this, onCompelet);
             qingdi_02Tem.on(Laya.Event.ERROR, this, onError);
             qingdi_02Tem.loadAni("SK/qingdi1.sk");
         }
         export function createHoumaTem(): void {
-            houmaTem.on(Laya.Event.COMPLETE, this, null);
+            houmaTem.on(Laya.Event.COMPLETE, this, onCompelet);
             houmaTem.on(Laya.Event.ERROR, this, onError);
             houmaTem.loadAni("SK/houma.sk");
         }
         export function createHouziTem(): void {
-            houziTem.on(Laya.Event.COMPLETE, this, null);
+            houziTem.on(Laya.Event.COMPLETE, this, onCompelet);
             houziTem.on(Laya.Event.ERROR, this, onError);
             houziTem.loadAni("SK/houzi.sk");
         }
-        export function createHouseTem(): void {
-            houseTem.on(Laya.Event.COMPLETE, this, null);
-            houseTem.on(Laya.Event.ERROR, this, onError);
-            houseTem.loadAni("SK/house.sk");
+        export function onCompelet(tem: Laya.Templet): void {
+            console.log(tem['_skBufferUrl'], '加载成功');
+
         }
-        export function onError(): void {
-            console.log('加载失败！')
+        export function onError(url): void {
+            console.log(url, '加载失败！');
         }
     }
 
@@ -1106,18 +1482,24 @@ export module lwg {
         /**提示文字的类型描述*/
         export enum HintDec {
             '金币不够了！',
-            '没有可以卖的皮肤了！',
+            '没有可以购买的皮肤了！',
             '暂时没有广告，过会儿再试试吧！',
             '暂无皮肤!',
             '暂无分享!',
             '暂无提示机会!',
             '观看完整广告才能获取奖励哦！',
-            '没有过关哦，再接再厉！',
+            '通关上一关才能解锁本关！',
             '分享成功后才能获取奖励！',
             '分享成功',
             '暂无视频，玩一局游戏之后分享！',
             '消耗2点体力！',
+            '今日体力福利已领取！',
+            '分享成功，获得125金币！',
+            '限定皮肤已经获得，请前往商店查看。',
+            '分享失败！',
+            '兑换码错误！'
         }
+
         /**提示类型*/
         export enum HintType {
             'noGold',
@@ -1132,52 +1514,79 @@ export module lwg {
             'sharesuccess',
             'novideo',
             'consumeEx',
+            'no_exemptExTime',
+            'shareyes',
+            "getXD",
+            "sharefailNoAward",
+            "inputerr"
         }
         /**皮肤的顺序以及名称*/
         export enum PifuOrder {
-            '01_xiaofu',
-            '02_konglong',
-            '03_xueren',
-            '04_qipao',
-            '05_qianxun',
-            '06_lvyifu',
-            '07_maozi',
-            '08_lufei',
-            '09_chaoren'
+            '01_gongzhu', '02_chiji', '03_change', '04_huiguniang', '05_tianshi', '06_xiaohongmao', '07_xiaohuangya', '08_zhenzi', '09_aisha'
+        }
+        /**皮肤的顺序以及名称*/
+        export enum PifuAllName {
+            '01_gongzhu', '02_chiji', '03_change', '04_huiguniang', '05_tianshi', '06_xiaohongmao', '07_xiaohuangya', '08_zhenzi', '09_aisha'
+        }
+        /**皮肤的顺序以及名称*/
+        export enum PifuMatching {
+            gongzhu = '01_gongzhu',
+            chiji = '02_chiji',
+            change = '03_change',
+            huiguniang = '04_huiguniang',
+            tianshi = '05_tianshi',
+            xiaohongmao = '06_xiaohongmao',
+            xiaohuangya = '07_xiaohuangya',
+            zhenzi = '08_zhenzi',
+            aisha = '09_aisha'
+        }
+        /**皮肤图片顺序对应的地址*/
+        export enum PifuSkin {
+            'UI_new/Pifu/pifu_01_gongzhu.png',
+            'UI_new/Pifu/pifu_02_chiji.png',
+            'UI_new/Pifu/pifu_03_change.png',
+            'UI_new/Pifu/pifu_04_huiguniang.png',
+            'UI_new/Pifu/pifu_05_tianshi.png',
+            'UI_new/Pifu/pifu_06_xiaohongmao.png',
+            'UI_new/Pifu/pifu_07_xiaohuangya.png',
+            'UI_new/Pifu/pifu_08_zhenzi.png',
+            'UI_new/Pifu/pifu_09_aisha.png'
         }
 
-        /**点击事件类型*/
-        export enum ClickType {
-            /**无效果*/
-            noEffect = 'noEffect',
-            /**点击放大*/
-            largen = 'largen',
-            /**类似气球*/
-            balloon = 'balloon',
-            /**小虫子*/
-            beetle = 'beetle',
+        /**灰色皮肤顺序对应的地址*/
+        export enum PifuSkin_No {
+            'UI_new/Pifu/pifu_01_gongzhu_h.png',
+            'UI_new/Pifu/pifu_02_chiji_h.png',
+            'UI_new/Pifu/pifu_03_change_h.png',
+            'UI_new/Pifu/pifu_04_huiguniang_h.png',
+            'UI_new/Pifu/pifu_05_tianshi_h.png',
+            'UI_new/Pifu/pifu_06_xiaohongmao_h.png',
+            'UI_new/Pifu/pifu_07_xiaohuangya_h.png',
+            'UI_new/Pifu/pifu_08_zhenzi_h.png',
+            'UI_new/Pifu/pifu_09_aisha_h.png'
+        }
+
+        /**名称图片对应地址*/
+        export enum PifuNameSkin {
+            'UI_new/Pifu/word_xueer.png',
+            'UI_new/Pifu/word_jingying.png',
+            'UI_new/Pifu/word_change.png',
+            'UI_new/Pifu/word_hui.png',
+            'UI_new/Pifu/word_tianshi.png',
+            'UI_new/Pifu/wrod_hongmao.png',
+            'UI_new/Pifu/word_huangya.png',
+            'UI_new/Pifu/word_changfa.png',
+            'UI_new/Pifu/word_bingjing.png'
         }
 
         /**音效*/
         export enum voiceUrl {
-            btn = 'Voice/btn.wav',
-            bgm = 'Voice/bgm.mp3',
-            victory = 'Voice/guoguan.wav',
-            defeated = 'Voice/wancheng.wav',
+            btn = 'voice/btn.wav',
+            bgm = 'voice/bgm.mp3',
+            victory = 'voice/guoguan.wav',
+            defeated = 'voice/wancheng.wav',
         }
 
-        /**皮肤的顺序以及名称*/
-        export enum PifuAllName {
-            '01_xiaofu',
-            '02_konglong',
-            '03_xueren',
-            '04_qipao',
-            '05_qianxun',
-            '06_lvyifu',
-            '07_maozi',
-            '08_lufei',
-            '09_chaoren'
-        }
         /**皮肤的顺序以及名称*/
         export enum PifuAllName_Ch {
             '同桌',
@@ -1191,31 +1600,6 @@ export module lwg {
             '英雄'
         }
 
-        /**皮肤顺序对应的地址*/
-        export enum PifuSkin {
-            'pifu/pifu_01_xiaofu.png',
-            'pifu/pifu_02_konglong.png',
-            'pifu/pifu_03_xueren.png',
-            'pifu/pifu_04_qipao.png',
-            'pifu/pifu_05_qianxun.png',
-            'pifu/pifu_06_lvyifu.png',
-            'pifu/pifu_07_maozi.png',
-            'pifu/pifu_08_lufei.png',
-            'pifu/pifu_09_chaoren.png'
-        }
-
-        /**灰色皮肤顺序对应的地址*/
-        export enum PifuSkin_No {
-            'pifu/pifu_01_xiaofu_h.png',
-            'pifu/pifu_02_konglong_h.png',
-            'pifu/pifu_03_xueren_h.png',
-            'pifu/pifu_04_qipao_h.png',
-            'pifu/pifu_05_qianxun_h.png',
-            'pifu/pifu_06_lvyifu_h.png',
-            'pifu/pifu_07_maozi_h.png',
-            'pifu/pifu_08_lufei_h.png',
-            'pifu/pifu_09_chaoren_h.png'
-        }
 
         /**任务类型*/
         export enum TaskType {
@@ -1229,7 +1613,6 @@ export module lwg {
             gold = 'gold',
         }
 
-
         /**角色的四个方向*/
         export enum PersonDir {
             up = 'up',
@@ -1238,15 +1621,7 @@ export module lwg {
             right = 'right',
         }
 
-        /**当前所有场景的名称*/
-        export enum SceneName {
-            UILoding = 'UILoding',
-            UIMain = 'UIMain',
-            UIStart = 'UIStart',
-            UITask = 'UITask',
-            UIVictory = 'UIVictory',
-            UIDefeated = 'UIDefeated'
-        }
+
 
         /**游戏当前的状态*/
         export enum GameState {
@@ -1264,11 +1639,11 @@ export module lwg {
 
         /**角色当前的状态，状态唯一，状态不会改变移动方向，需要手动改*/
         export enum MoveState {
-            /**在梯子上，优先级最高*/
+            /**在地板上，优先级最高*/
             onFloor = 'onFloor',
             /**在梯子上，优先级第二*/
             onLadder = 'onLadder',
-            /**在梯子上，优先级最后*/
+            /**在空中，优先级最后*/
             inAir = 'inAir'
         }
 
@@ -1306,6 +1681,32 @@ export module lwg {
             yellowish = 'Room/room_yellowish.png'
         }
 
+        /**房子的皮肤地址顺序*/
+        export enum RoomSkinZoder {
+            'Room/room_blue.png' = 0,
+            'Room/room_bluish.png' = 1,
+            'Room/room_grass.png' = 2,
+            'Room/room_green.png' = 3,
+            'Room/room_pink.png' = 4,
+            'Room/room_purple.png' = 5,
+            'Room/room_red.png' = 6,
+            'Room/room_yellow.png' = 7,
+            'Room/room_yellowish.png' = 8
+        }
+        /**房子的皮肤地址对应的墙纸地址*/
+        export enum WallpaperSkin {
+            'Room/room_blue_wallpaper.png',
+            'Room/room_bluish_wallpaper.png',
+            'Room/room_grass_wallpaper.png',
+            'Room/room_green_wallpaper.png',
+            'Room/room_pink_wallpaper.png',
+            'Room/room_purple_wallpaper.png',
+            'Room/room_red_wallpaper.png',
+            'Room/room_yellow_wallpaper.png',
+            'Room/room_yellowish_wallpaper.png'
+        }
+
+
         /**通道上的墙壁的皮肤地址*/
         export enum WallSkin {
             blue = 'Room/room_blue_wall.png',
@@ -1316,7 +1717,8 @@ export module lwg {
             purple = 'Room/room_purple_wall.png',
             red = 'Room/room_red_wall.png',
             yellow = 'Room/room_yellow_wall.png',
-            yellowish = 'Room/room_yellowish_wall.png'
+            yellowish = 'Room/room_yellowish_wall.png',
+            common = 'Room/room_common_wall.png'
         }
 
         /**通道颜色的皮肤地址*/
@@ -1329,7 +1731,8 @@ export module lwg {
             purple = 'Room/room_purple_color.png',
             red = 'Room/room_red_color.png',
             yellow = 'Room/room_yellow_color.png',
-            yellowish = 'Room/room_yellowish_color.png'
+            yellowish = 'Room/room_yellowish_color.png',
+            common = 'Room/room_common_color.png'
         }
 
         /**公主的动画类型*/
@@ -1373,32 +1776,25 @@ export module lwg {
             box_02_static = "box_02_static"
         }
 
-        /**子弹的类型*/
         export enum bulletType {
-            yellow = "yellow",
-            bule = "bule",
-            green = "green",
+            yellow = 'yellow',
+            bule = 'bule',
+            green = 'green',
         }
-
-        /**子弹类型对应的图片地址*/
         export enum bulletSkin {
-            yellow = "Frame/UI/ui_circle_c_008.png",
-            bule = "Frame/UI/ui_circle_c_006.png",
-            green = "Frame/UI/ui_circle_c_001.png",
+            yellow = 'Frame/UI/ui_circle_c_008.png',
+            bule = 'Frame/UI/ui_circle_006.png',
+            green = 'Frame/UI/ui_circle_001.png',
         }
-
-        /**子弹的类型*/
         export enum enemyType {
-            yellow = "yellow",
-            bule = "bule",
-            green = "green",
+            yellow = 'yellow',
+            bule = 'bule',
+            green = 'green',
         }
-
-        /**子弹类型对应的图片地址*/
         export enum enemySkin {
-            yellow = "Frame/UI/ui_square_011.png",
-            bule = "Frame/UI/ui_square_002.png",
-            green = "Frame/UI/ui_square_009.png",
+            yellow = 'Frame/UI/ui_square_011.png',
+            bule = 'Frame/UI/ui_square_002.png',
+            green = 'Frame/UI/ui_square_009.png',
         }
     }
 
@@ -1407,12 +1803,19 @@ export module lwg {
     * 2.点击事件模块
     */
     export module Click {
-        export enum Type {
+
+        /**点击事件类型*/
+        export enum ClickType {
+            /**无效果*/
             noEffect = 'noEffect',
+            /**点击放大*/
             largen = 'largen',
+            /**类似气球*/
             balloon = 'balloon',
-            beetle = 'beetle'
+            /**小虫子*/
+            beetle = 'beetle',
         }
+
         /**音乐的url*/
         export let audioUrl: string;
         /**
@@ -1443,16 +1846,16 @@ export module lwg {
                 Click.audioUrl = Enum.voiceUrl.btn;
             }
             switch (effect) {
-                case 'noEffect':
+                case ClickType.noEffect:
                     btnEffect = new Btn_NoEffect();
                     break;
-                case 'largen':
+                case ClickType.largen:
                     btnEffect = new Btn_LargenEffect();
                     break;
-                case 'balloon':
+                case ClickType.balloon:
                     btnEffect = new Btn_Balloon();
                     break;
-                case 'beetle':
+                case ClickType.balloon:
                     btnEffect = new Btn_Beetle();
                     break;
                 default:
@@ -1568,7 +1971,7 @@ export module lwg {
         /**按下*/
         down(event): void {
             event.currentTarget.scale(1.1, 1.1);
-            if (lwg.Global._voiceSwitch) {
+            if (lwg.PalyAudio._voiceSwitch) {
                 Laya.SoundManager.playSound(Click.audioUrl, 1, Laya.Handler.create(this, function () { }));
             }
         }
@@ -1831,7 +2234,7 @@ export module lwg {
         * @param delayed 延时
         * @param func 回调函数
         */
-        export function move_FadeOut_Scale(node, firstX, firstY, targetX, targetY, time, delayed, func): void {
+        export function move_FadeOut_Scale_01(node, firstX, firstY, targetX, targetY, time, delayed, func): void {
             node.alpha = 0;
             node.targetX = 0;
             node.targetY = 0;
@@ -1842,6 +2245,57 @@ export module lwg {
                     func();
                 }
             }), delayed)
+        }
+
+        /**
+         * 移动+缩放,等比缩放
+         * @param node 节点
+         * @param fScale 初始大小
+         * @param fX 初始x位置
+         * @param fY 初始y位置
+         * @param tX x轴目标位置
+         * @param tY y轴目标位置
+         * @param eScale 最终大小
+         * @param time 花费时间
+         * @param delayed 延时
+         * @param func 回调函数
+         */
+        export function move_Scale(node, fScale, fX, fY, tX, tY, eScale, time, delayed, func): void {
+            node.scaleX = fScale;
+            node.scaleY = fScale;
+            node.x = fX;
+            node.y = fY;
+            Laya.Tween.to(node, { x: tX, y: tY, scaleX: eScale, scaleY: eScale }, time, null, Laya.Handler.create(this, function () {
+                if (func !== null) {
+                    func();
+                }
+            }), delayed)
+        }
+
+        /**
+         * 旋转形变 旋转+放大缩小 ，类似于纸板被击中倾斜后恢复
+         * @param target 目标节点
+         * @param fRotate 初始角度
+         * @param fScaleX 初始X缩放
+         * @param fScaleY 初始Y缩放
+         * @param eRotate 中间角度
+         * @param eScaleX 最终X缩放
+         * @param eScaleY 最终Y缩放
+         * @param time 花费时间
+         * @param delayed 延迟时间
+         * @param func 回调函数
+         */
+        export function rotate_Scale(target: Laya.Image, fRotate, fScaleX, fScaleY, eRotate, eScaleX, eScaleY, time, delayed, func): void {
+            target.scaleX = fScaleX;
+            target.scaleY = fScaleY;
+            target.rotation = fRotate;
+            Laya.Tween.to(target, { rotation: eRotate, scaleX: eScaleX, scaleY: eScaleY }, time, null, Laya.Handler.create(this, function () {
+                Laya.Tween.to(target, { rotation: 0, scaleX: 1, scaleY: 1 }, time / 2, null, Laya.Handler.create(this, function () {
+                    if (func !== null) {
+                        func();
+                    }
+                }), delayed)
+            }), 0)
         }
 
         /**
@@ -2325,6 +2779,31 @@ export module lwg {
             }), 0);
         }
 
+
+        /**
+        * 放大缩小加上渐变
+        * @param target 节点
+        * @param fAlpha 初始透明度
+        * @param fScaleX 初始X大小
+        * @param fScaleY 初始Y大小
+        * @param endScaleX 最终X大小
+        * @param endScaleY 最终Y大小
+        * @param eAlpha 最终透明度
+        * @param time 花费时间
+        * @param delayed 延迟时间
+        * @param func 结束回调
+        */
+        export function scale_Alpha(target, fAlpha, fScaleX, fScaleY, eScaleX, eScaleY, eAlpha, time, delayed, func): void {
+            target.alpha = fAlpha;
+            target.scaleX = fScaleX;
+            target.scaleY = fScaleY;
+            Laya.Tween.to(target, { scaleX: eScaleX, scaleY: eScaleY, alpha: eAlpha }, time, null, Laya.Handler.create(this, function () {
+                if (func !== null) {
+                    func()
+                }
+            }), delayed);
+        }
+
         /**
          * 旋转放大回弹动画，旋转放大角度增加=》原始大小和角度=，旋转放大角度增加=》原始大小和角度，有一个回来效果
          * @param target 目标
@@ -2411,12 +2890,16 @@ export module lwg {
         //     Laya.SoundManager.playSound('音效/点击错误.mp3', number, Laya.Handler.create(this, function () { }));
         // }
 
+        /**音效开关*/
+        export let _voiceSwitch = true;
         /**通用音效播放
          * @param url 音效地址
          * @param number 播放次数
          */
         export function playSound(url, number) {
-            Laya.SoundManager.playSound(url, number, Laya.Handler.create(this, function () { }));
+            if (_voiceSwitch) {
+                Laya.SoundManager.playSound(url, number, Laya.Handler.create(this, function () { }));
+            }
         }
 
         /**通用背景音乐播放
@@ -2425,7 +2908,9 @@ export module lwg {
         * @param deley 延时时间
         */
         export function playMusic(url, number, deley) {
-            Laya.SoundManager.playMusic(url, number, Laya.Handler.create(this, function () { }), deley);
+            if (_voiceSwitch) {
+                Laya.SoundManager.playMusic(url, number, Laya.Handler.create(this, function () { }), deley);
+            }
         }
 
         /**停止播放背景音乐*/
@@ -2436,14 +2921,6 @@ export module lwg {
 
     /**工具模块*/
     export module Tools {
-
-        /**
-         * RGB三个颜色值转换成16进制的字符串‘000000’，需要加上‘#’；
-         * */
-        export function toHexString(r, g, b) {
-            return ("00000" + (r << 16 | g << 8 | b).toString(16)).slice(-6);
-        }
-
         /**
          * 为一个节点创建一个扇形遮罩发
          * 想要遮罩的形状发生变化，必须先将父节点的cacheAs改回“none”，接着改变其角度，再次将cacheAs改为“bitmap”，必须在同一帧内进行，因为是同一帧，所以在当前帧最后或者下一帧前表现出来，帧内时间不会表现任何状态，这是个思路，帧内做任何变化都不会显示，只要帧结尾改回来就行。

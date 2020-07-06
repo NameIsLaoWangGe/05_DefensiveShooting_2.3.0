@@ -142,20 +142,55 @@
         let Global;
         (function (Global) {
             Global._gameLevel = 1;
+            Global._yuanpifu = null;
             Global._gameStart = false;
             Global._execution = 100;
             Global._exemptEx = true;
+            Global._hotShare = true;
             Global._freetHint = true;
             Global._CustomsNum = 999;
             Global._stageClick = true;
+            Global._openXD = false;
             Global._goldNum = 0;
-            Global._voiceSwitch = true;
+            Global._elect = true;
             Global._shakeSwitch = true;
-            Global._allPifu = ['01_xiaofu', '02_konglong', '03_xueren', '04_qipao', '05_qianxun', '06_lvyifu', '07_maozi', '08_lufei', '09_chaoren'];
+            Global._btnDelayed = 2000;
+            Global._currentPifu = '01_gongzhu';
+            Global._havePifu = ['01_gongzhu'];
+            Global._notHavePifuSubXD = [];
+            Global._allPifu = ['01_gongzhu', '02_chiji', '03_change', '04_huiguniang', '05_tianshi', '06_xiaohongmao', '07_xiaohuangya', '08_zhenzi', '09_aisha'];
+            Global._buyNum = 1;
+            Global._watchAdsNum = 0;
             Global.pingceV = true;
             function _vibratingScreen() {
             }
             Global._vibratingScreen = _vibratingScreen;
+            function notHavePifuSubXD() {
+                let allArray = [];
+                for (let i = 0; i < lwg.Global._allPifu.length; i++) {
+                    const element = lwg.Global._allPifu[i];
+                    allArray.push(element);
+                }
+                for (let j = 0; j < allArray.length; j++) {
+                    let element1 = allArray[j];
+                    for (let k = 0; k < lwg.Global._havePifu.length; k++) {
+                        let element2 = lwg.Global._havePifu[k];
+                        if (element1 === element2) {
+                            allArray.splice(j, 1);
+                            j--;
+                        }
+                    }
+                }
+                lwg.Global._notHavePifu = allArray;
+                for (let k = 0; k < allArray.length; k++) {
+                    const element = allArray[k];
+                    if (element === '09_aisha') {
+                        allArray.splice(k, 1);
+                    }
+                }
+                lwg.Global._notHavePifuSubXD = allArray;
+            }
+            Global.notHavePifuSubXD = notHavePifuSubXD;
             function _createLevel(parent, x, y) {
                 let sp;
                 Laya.loader.load('prefab/LevelNode.json', Laya.Handler.create(this, function (prefab) {
@@ -195,7 +230,7 @@
                     parent.addChild(sp);
                     sp.pos(671, 273);
                     sp.zOrder = 0;
-                    Click.on(Enum.ClickType.largen, null, sp, null, null, null, btnSetUp, null);
+                    Click.on(Click.ClickType.largen, null, sp, null, null, null, btnSetUp, null);
                     Global.BtnSetNode = sp;
                     Global.BtnSetNode.name = 'BtnSetNode';
                 }));
@@ -243,11 +278,11 @@
                     _prefab.json = prefab;
                     sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
                     parent.addChild(sp);
-                    sp.pos(645, 137);
+                    sp.pos(645, 167);
                     sp.zOrder = 0;
                     Global.BtnPauseNode = sp;
                     Global.BtnPauseNode.name = 'BtnPauseNode';
-                    Click.on(Enum.ClickType.largen, null, sp, null, null, null, btnPauseUp, null);
+                    Click.on(Click.ClickType.largen, null, sp, null, null, null, btnPauseUp, null);
                 }));
             }
             Global._createBtnPause = _createBtnPause;
@@ -264,18 +299,18 @@
                     _prefab.json = prefab;
                     sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
                     parent.addChild(sp);
-                    sp.pos(645, 273);
+                    sp.pos(645, 293);
                     sp.zOrder = 0;
                     Global.BtnHintNode = sp;
                     Global.BtnHintNode.name = 'BtnHintNode';
-                    Click.on(Enum.ClickType.largen, null, sp, null, null, null, btnHintUp, null);
+                    Click.on(Click.ClickType.largen, null, sp, null, null, null, btnHintUp, null);
                 }));
             }
             Global._createBtnHint = _createBtnHint;
             function btnHintUp(event) {
                 event.currentTarget.scale(1, 1);
                 event.stopPropagation();
-                lwg.Global._createHint(lwg.Enum.HintType.noHint);
+                Admin._openScene(Admin.SceneName.UISmallHint, null, null, f => { });
             }
             Global.btnHintUp = btnHintUp;
             function _createBtnAgain(parent) {
@@ -285,23 +320,63 @@
                     _prefab.json = prefab;
                     sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
                     parent.addChild(sp);
-                    sp.pos(645, 404);
+                    sp.pos(645, 409);
                     sp.zOrder = 0;
-                    Click.on(Enum.ClickType.largen, null, sp, null, null, null, btnAgainUp, null);
+                    Click.on(Click.ClickType.largen, null, sp, null, btnAgainUp, null, null, null);
                     Global.BtnAgainNode = sp;
                 }));
             }
             Global._createBtnAgain = _createBtnAgain;
             function btnAgainUp(event) {
                 event.stopPropagation();
-                Global.refreshNum++;
                 event.currentTarget.scale(1, 1);
+                if (!Global._gameStart) {
+                    return;
+                }
+                Global.refreshNum++;
                 Admin._refreshScene();
             }
             Global.btnAgainUp = btnAgainUp;
-            function _createHint(type) {
+            function _createP201_01(parent) {
                 let sp;
-                Laya.loader.load('prefab/HintPre.json', Laya.Handler.create(this, function (prefab) {
+                Laya.loader.load('prefab/P201.json', Laya.Handler.create(this, function (prefab) {
+                    let _prefab = new Laya.Prefab();
+                    _prefab.json = prefab;
+                    sp = Laya.Pool.getItemByCreateFun('P201', _prefab.create, _prefab);
+                    parent.addChild(sp);
+                    sp.pos(90, 225);
+                    sp.zOrder = 65;
+                    Global.P201_01Node = sp;
+                }));
+            }
+            Global._createP201_01 = _createP201_01;
+            function _createHint_01(type) {
+                let sp;
+                Laya.loader.load('prefab/HintPre_01.json', Laya.Handler.create(this, function (prefab) {
+                    let _prefab = new Laya.Prefab();
+                    _prefab.json = prefab;
+                    sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
+                    Laya.stage.addChild(sp);
+                    sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
+                    let dec = sp.getChildByName('dec');
+                    dec.text = Enum.HintDec[type];
+                    sp.zOrder = 100;
+                    dec.alpha = 0;
+                    Animation.scale_Alpha(sp, 0, 1, 0, 1, 1, 1, 200, 0, f => {
+                        Animation.fadeOut(dec, 0, 1, 150, 0, f => {
+                            Animation.fadeOut(dec, 1, 0, 200, 800, f => {
+                                Animation.scale_Alpha(sp, 1, 1, 1, 1, 0, 0, 200, 0, f => {
+                                    sp.removeSelf();
+                                });
+                            });
+                        });
+                    });
+                }));
+            }
+            Global._createHint_01 = _createHint_01;
+            function _createHint_02(type) {
+                let sp;
+                Laya.loader.load('prefab/HintPre_02.json', Laya.Handler.create(this, function (prefab) {
                     let _prefab = new Laya.Prefab();
                     _prefab.json = prefab;
                     sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
@@ -315,8 +390,8 @@
                     });
                 }));
             }
-            Global._createHint = _createHint;
-            function createConsumeEx(func) {
+            Global._createHint_02 = _createHint_02;
+            function createConsumeEx(subEx) {
                 let label = Laya.Pool.getItemByClass('label', Laya.Label);
                 label.name = 'label';
                 Laya.stage.addChild(label);
@@ -330,9 +405,6 @@
                 lwg.Animation.fadeOut(label, 0, 1, 200, 150, f => {
                     lwg.Animation.leftRight_Shake(Global.ExecutionNumNode, 15, 60, 0, null);
                     lwg.Animation.fadeOut(label, 1, 0, 600, 400, f => {
-                        if (func) {
-                            func();
-                        }
                     });
                 });
             }
@@ -382,6 +454,14 @@
                     '_execution': lwg.Global._execution,
                     '_exemptExTime': lwg.Global._exemptExTime,
                     '_freeHintTime': lwg.Global._freeHintTime,
+                    '_hotShareTime': lwg.Global._hotShareTime,
+                    '_addExDate': lwg.Global._addExDate,
+                    '_addExHours': lwg.Global._addExHours,
+                    '_addMinutes': lwg.Global._addMinutes,
+                    '_buyNum': lwg.Global._buyNum,
+                    '_currentPifu': lwg.Global._currentPifu,
+                    '_havePifu': lwg.Global._havePifu,
+                    '_watchAdsNum': lwg.Global._watchAdsNum,
                 };
                 let data = JSON.stringify(storageData);
                 Laya.LocalStorage.setJSON('storageData', data);
@@ -403,6 +483,14 @@
                     lwg.Global._execution = 15;
                     lwg.Global._exemptExTime = null;
                     lwg.Global._freeHintTime = null;
+                    lwg.Global._hotShareTime = null;
+                    lwg.Global._addExDate = (new Date).getDate();
+                    lwg.Global._addExHours = (new Date).getHours();
+                    lwg.Global._addMinutes = (new Date).getMinutes();
+                    lwg.Global._buyNum = 1;
+                    lwg.Global._currentPifu = Enum.PifuAllName[0];
+                    lwg.Global._havePifu = ['01_gongzhu'];
+                    lwg.Global._watchAdsNum = 0;
                     return null;
                 }
             }
@@ -423,6 +511,12 @@
                 SceneName["UISet"] = "UISet";
                 SceneName["UIPifu"] = "UIPifu";
                 SceneName["UIPuase"] = "UIPuase";
+                SceneName["UIShare"] = "UIShare";
+                SceneName["UISmallHint"] = "UISmallHint";
+                SceneName["UIXDpifu"] = "UIXDpifu";
+                SceneName["UIPifuTry"] = "UIPifuTry";
+                SceneName["UIRedeem"] = "UIRedeem";
+                SceneName["UIAnchorXD"] = "UIAnchorXD";
             })(SceneName = Admin.SceneName || (Admin.SceneName = {}));
             let GameState;
             (function (GameState) {
@@ -436,13 +530,26 @@
                 Laya.Scene.load('Scene/' + openName + '.json', Laya.Handler.create(this, function (scene) {
                     scene.width = Laya.stage.width;
                     scene.height = Laya.stage.height;
-                    Laya.stage.addChild(scene);
+                    if (zOder) {
+                        Laya.stage.addChildAt(scene, zOder);
+                    }
+                    else {
+                        Laya.stage.addChild(scene);
+                    }
                     scene.name = openName;
                     Admin._sceneControl[openName] = scene;
-                    let background = scene.getChildByName('Background');
+                    let background = scene.getChildByName('background');
                     if (background) {
-                        background.width = Laya.stage.width;
-                        background.height = Laya.stage.height;
+                        if (openName.substring(0, 6) === 'UIMain') {
+                            background.width = null;
+                            background.height = null;
+                            background.x = 360,
+                                background.y = 640;
+                        }
+                        else {
+                            background.width = Laya.stage.width;
+                            background.height = Laya.stage.height;
+                        }
                     }
                     if (cloesScene) {
                         cloesScene.close();
@@ -462,13 +569,7 @@
                 else {
                     num = lwg.Global._gameLevel;
                 }
-                Admin.openLevelNum = num;
-                if (num <= 9) {
-                    sceneName = 'UIMain_00' + num;
-                }
-                else if (9 < num || num <= 99) {
-                    sceneName = 'UIMain_0' + num;
-                }
+                Admin.openLevelNum = lwg.Global._gameLevel;
                 if (num <= 9) {
                     sceneName = 'UIMain_00' + num;
                 }
@@ -484,10 +585,10 @@
             Admin._openGLCustoms = _openGLCustoms;
             function _openNumCustom(num) {
                 let sceneName;
+                Admin.openLevelNum = num;
                 if (num > 30) {
                     num = num - 30;
                 }
-                Admin.openLevelNum = num;
                 if (num <= 9) {
                     sceneName = 'UIMain_00' + num;
                 }
@@ -501,9 +602,12 @@
                     sceneName = 'UIMain_0' + num;
                 }
                 Admin.openCustomName = sceneName;
-                console.log('打开' + sceneName);
                 _openScene(sceneName, null, null, f => {
                     lwg.Global._gameStart = true;
+                    if (lwg.Global._yuanpifu !== null) {
+                        Global._currentPifu = lwg.Global._yuanpifu;
+                        lwg.Global._yuanpifu = null;
+                    }
                 });
             }
             Admin._openNumCustom = _openNumCustom;
@@ -527,6 +631,27 @@
                 });
             }
             Admin._openLevelNumCustom = _openLevelNumCustom;
+            function _nextCustomScene(subEx) {
+                if (subEx > 0) {
+                    Global._execution -= subEx;
+                    let num = Global.ExecutionNumNode.getChildByName('Num');
+                    num.value = Global._execution.toString();
+                    Global._createHint_01(lwg.Enum.HintType.consumeEx);
+                    Global.createConsumeEx(subEx);
+                }
+                if (Admin.openLevelNum >= Global._gameLevel) {
+                    Admin._closeCustomScene();
+                    Global._gameLevel++;
+                    Admin._openGLCustoms();
+                }
+                else {
+                    Admin._closeCustomScene();
+                    Admin.openLevelNum++;
+                    Admin._openLevelNumCustom();
+                }
+                LocalStorage.addData();
+            }
+            Admin._nextCustomScene = _nextCustomScene;
             function _refreshScene() {
                 Admin._sceneControl[Admin.openCustomName].close();
                 _openScene(Admin.openCustomName, null, null, null);
@@ -595,6 +720,38 @@
                             ADManager.TAPoint(TaT.PageLeave, 'pausepage');
                         }
                         break;
+                    case SceneName.UIShare:
+                        if (type === 'on') {
+                            ADManager.TAPoint(TaT.PageEnter, 'sharepage');
+                        }
+                        else if (type === 'dis') {
+                            ADManager.TAPoint(TaT.PageLeave, 'sharepage');
+                        }
+                        break;
+                    case SceneName.UIPifu:
+                        if (type === 'on') {
+                            ADManager.TAPoint(TaT.PageEnter, 'skinpage');
+                        }
+                        else if (type === 'dis') {
+                            ADManager.TAPoint(TaT.PageLeave, 'skinpage');
+                        }
+                        break;
+                    case SceneName.UIPifuTry:
+                        if (type === 'on') {
+                            ADManager.TAPoint(TaT.PageEnter, 'skintrypage');
+                        }
+                        else if (type === 'dis') {
+                            ADManager.TAPoint(TaT.PageLeave, 'skintrypage');
+                        }
+                        break;
+                    case SceneName.UIXDpifu:
+                        if (type === 'on') {
+                            ADManager.TAPoint(TaT.PageEnter, 'limitskinpage');
+                        }
+                        else if (type === 'dis') {
+                            ADManager.TAPoint(TaT.PageLeave, 'limitskinpage');
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -613,6 +770,9 @@
                     this.lwgInit();
                     this.btnOnClick();
                     this.adaptive();
+                    this.openAni();
+                }
+                selfVars() {
                 }
                 gameState(calssName) {
                     switch (calssName) {
@@ -634,8 +794,6 @@
                 }
                 lwgInit() {
                 }
-                selfVars() {
-                }
                 btnOnClick() {
                 }
                 adaptive() {
@@ -647,8 +805,8 @@
                 onUpdate() {
                     this.lwgOnUpdate();
                 }
-                lwgOnUpdate() {
-                }
+                lwgOnUpdate() { }
+                ;
                 onDisable() {
                     this.lwgDisable();
                 }
@@ -669,15 +827,8 @@
                     this.lwgInit();
                 }
                 lwgInit() {
+                    console.log('父类的初始化！');
                 }
-                onUpdate() {
-                    this.lwgOnUpdate();
-                }
-                lwgOnUpdate() { }
-                onDisable() {
-                    this.lwgOnDisable();
-                }
-                lwgOnDisable() { }
             }
             Admin.Person = Person;
             class Object extends Laya.Script {
@@ -691,69 +842,54 @@
                     this.self[calssName] = this;
                     this.rig = this.self.getComponent(Laya.RigidBody);
                     this.lwgInit();
+                    this.btnOnClick();
                 }
                 lwgInit() {
+                }
+                btnOnClick() {
                 }
                 onUpdate() {
                     this.lwgOnUpdate();
                 }
-                lwgOnUpdate() { }
-                onDisable() {
-                    this.lwgOnDisable();
+                lwgOnUpdate() {
                 }
-                lwgOnDisable() { }
+                onDisable() {
+                    this.lwgDisable();
+                }
+                lwgDisable() {
+                }
             }
             Admin.Object = Object;
         })(Admin = lwg.Admin || (lwg.Admin = {}));
-        let Hint;
-        (function (Hint) {
-            let SkinUrl;
-            (function (SkinUrl) {
-                SkinUrl[SkinUrl["ui_square_012"] = 0] = "ui_square_012";
-            })(SkinUrl || (SkinUrl = {}));
-            function _createHint(type) {
-                let sp = new Laya.Sprite();
-                let pic = new Laya.Image();
-                pic.skin = SkinUrl[0];
-                Laya.stage.addChild(sp);
-                sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
-                let dec = sp.getChildByName('dec');
-                dec.text = Enum.HintDec[type];
-                sp.zOrder = 100;
-                Animation.HintAni_01(sp, 100, 100, 1000, 50, 100, f => {
-                    sp.removeSelf();
-                });
-            }
-            Hint._createHint = _createHint;
-        })(Hint = lwg.Hint || (lwg.Hint = {}));
         let Effects;
         (function (Effects) {
             let SkinUrl;
             (function (SkinUrl) {
-                SkinUrl[SkinUrl["Frame/Effects/cir_white.png"] = 0] = "Frame/Effects/cir_white.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_black.png"] = 1] = "Frame/Effects/cir_black.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_blue.png"] = 2] = "Frame/Effects/cir_blue.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_bluish.png"] = 3] = "Frame/Effects/cir_bluish.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_cyan.png"] = 4] = "Frame/Effects/cir_cyan.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_grass.png"] = 5] = "Frame/Effects/cir_grass.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_green.png"] = 6] = "Frame/Effects/cir_green.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_orange.png"] = 7] = "Frame/Effects/cir_orange.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_pink.png"] = 8] = "Frame/Effects/cir_pink.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_purple.png"] = 9] = "Frame/Effects/cir_purple.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_red.png"] = 10] = "Frame/Effects/cir_red.png";
-                SkinUrl[SkinUrl["Frame/Effects/cir_yellow.png"] = 11] = "Frame/Effects/cir_yellow.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_black.png"] = 12] = "Frame/Effects/star_black.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_blue.png"] = 13] = "Frame/Effects/star_blue.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_bluish.png"] = 14] = "Frame/Effects/star_bluish.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_cyan.png"] = 15] = "Frame/Effects/star_cyan.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_grass.png"] = 16] = "Frame/Effects/star_grass.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_green.png"] = 17] = "Frame/Effects/star_green.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_orange.png"] = 18] = "Frame/Effects/star_orange.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_pink.png"] = 19] = "Frame/Effects/star_pink.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_purple.png"] = 20] = "Frame/Effects/star_purple.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_red.png"] = 21] = "Frame/Effects/star_red.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_white.png"] = 22] = "Frame/Effects/star_white.png";
-                SkinUrl[SkinUrl["Frame/Effects/star_yellow.png"] = 23] = "Frame/Effects/star_yellow.png";
+                SkinUrl[SkinUrl["Effects/cir_white.png"] = 0] = "Effects/cir_white.png";
+                SkinUrl[SkinUrl["Effects/cir_black.png"] = 1] = "Effects/cir_black.png";
+                SkinUrl[SkinUrl["Effects/cir_blue.png"] = 2] = "Effects/cir_blue.png";
+                SkinUrl[SkinUrl["Effects/cir_bluish.png"] = 3] = "Effects/cir_bluish.png";
+                SkinUrl[SkinUrl["Effects/cir_cyan.png"] = 4] = "Effects/cir_cyan.png";
+                SkinUrl[SkinUrl["Effects/cir_grass.png"] = 5] = "Effects/cir_grass.png";
+                SkinUrl[SkinUrl["Effects/cir_green.png"] = 6] = "Effects/cir_green.png";
+                SkinUrl[SkinUrl["Effects/cir_orange.png"] = 7] = "Effects/cir_orange.png";
+                SkinUrl[SkinUrl["Effects/cir_pink.png"] = 8] = "Effects/cir_pink.png";
+                SkinUrl[SkinUrl["Effects/cir_purple.png"] = 9] = "Effects/cir_purple.png";
+                SkinUrl[SkinUrl["Effects/cir_red.png"] = 10] = "Effects/cir_red.png";
+                SkinUrl[SkinUrl["Effects/cir_yellow.png"] = 11] = "Effects/cir_yellow.png";
+                SkinUrl[SkinUrl["Effects/star_black.png"] = 12] = "Effects/star_black.png";
+                SkinUrl[SkinUrl["Effects/star_blue.png"] = 13] = "Effects/star_blue.png";
+                SkinUrl[SkinUrl["Effects/star_bluish.png"] = 14] = "Effects/star_bluish.png";
+                SkinUrl[SkinUrl["Effects/star_cyan.png"] = 15] = "Effects/star_cyan.png";
+                SkinUrl[SkinUrl["Effects/star_grass.png"] = 16] = "Effects/star_grass.png";
+                SkinUrl[SkinUrl["Effects/star_green.png"] = 17] = "Effects/star_green.png";
+                SkinUrl[SkinUrl["Effects/star_orange.png"] = 18] = "Effects/star_orange.png";
+                SkinUrl[SkinUrl["Effects/star_pink.png"] = 19] = "Effects/star_pink.png";
+                SkinUrl[SkinUrl["Effects/star_purple.png"] = 20] = "Effects/star_purple.png";
+                SkinUrl[SkinUrl["Effects/star_red.png"] = 21] = "Effects/star_red.png";
+                SkinUrl[SkinUrl["Effects/star_white.png"] = 22] = "Effects/star_white.png";
+                SkinUrl[SkinUrl["Effects/star_yellow.png"] = 23] = "Effects/star_yellow.png";
+                SkinUrl[SkinUrl["Effects/icon_biggold.png"] = 24] = "Effects/icon_biggold.png";
             })(SkinUrl = Effects.SkinUrl || (Effects.SkinUrl = {}));
             class EffectsBase extends Laya.Script {
                 onEnable() {
@@ -835,78 +971,289 @@
                 }
             }
             Effects.commonExplosion = commonExplosion;
+            function createAddGold(parent, index, x, y, targetX, targetY, func) {
+                let ele = Laya.Pool.getItemByClass('addGold', Laya.Image);
+                ele.name = 'addGold';
+                ele.alpha = 1;
+                ele.scale(1, 1);
+                ele.skin = SkinUrl[24];
+                parent.addChild(ele);
+                ele.zOrder = 60;
+                ele.pos(x, y);
+                let scirpt = ele.getComponent(AddGold);
+                if (!scirpt) {
+                    ele.addComponent(AddGold);
+                    let scirpt1 = ele.getComponent(AddGold);
+                    scirpt1.line = index;
+                    scirpt1.targetX = targetX;
+                    scirpt1.targetY = targetY;
+                    scirpt1.timer -= index * 3;
+                    scirpt1.moveSwitch = true;
+                    scirpt1.func = func;
+                }
+                else {
+                    scirpt.line = index;
+                    scirpt.timer -= index * 3;
+                    scirpt.targetX = targetX;
+                    scirpt.targetY = targetY;
+                    scirpt.moveSwitch = true;
+                    scirpt.func = func;
+                }
+            }
+            Effects.createAddGold = createAddGold;
+            class AddGold extends lwg.Effects.EffectsBase {
+                initProperty() {
+                }
+                moveRules() {
+                    if (this.moveSwitch) {
+                        this.timer++;
+                        if (this.timer > 0) {
+                            lwg.Animation.move_Scale(this.self, 1, this.self.x, this.self.y, this.targetX, this.targetY, 0.35, 250, 0, f => {
+                                this.self.removeSelf();
+                                if (this.func !== null) {
+                                    this.func();
+                                }
+                            });
+                            this.moveSwitch = false;
+                        }
+                    }
+                }
+            }
+            Effects.AddGold = AddGold;
+            function createFireworks(parent, quantity, x, y) {
+                for (let index = 0; index < quantity; index++) {
+                    let ele = Laya.Pool.getItemByClass('fireworks', Laya.Image);
+                    ele.name = 'fireworks';
+                    let num = Math.floor(Math.random() * 12);
+                    ele.alpha = 1;
+                    ele.skin = SkinUrl[num];
+                    parent.addChild(ele);
+                    ele.pos(x, y);
+                    let scirpt = ele.getComponent(Fireworks);
+                    if (!scirpt) {
+                        ele.addComponent(Fireworks);
+                    }
+                }
+            }
+            Effects.createFireworks = createFireworks;
+            class Fireworks extends lwg.Effects.EffectsBase {
+                initProperty() {
+                    this.startAngle = 360 * Math.random();
+                    this.startSpeed = 5 * Math.random() + 5;
+                    this.startScale = 0.4 + Math.random() * 0.6;
+                    this.accelerated = 0.1;
+                    this.vanishTime = 200 + Math.random() * 10;
+                }
+                moveRules() {
+                    this.timer++;
+                    if (this.timer >= this.vanishTime * 3 / 5) {
+                        this.self.alpha -= 0.1;
+                    }
+                    if (this.timer >= this.vanishTime) {
+                        this.self.removeSelf();
+                    }
+                    else {
+                        this.commonSpeedXYByAngle(this.startAngle, this.startSpeed);
+                    }
+                    if (this.self.scaleX < 0) {
+                        this.self.scaleX += 0.01;
+                    }
+                    else if (this.self.scaleX >= this.startScale) {
+                        this.self.scaleX -= 0.01;
+                    }
+                }
+            }
+            Effects.Fireworks = Fireworks;
+            function createLeftOrRightJet(parent, direction, quantity, x, y) {
+                for (let index = 0; index < quantity; index++) {
+                    let ele = Laya.Pool.getItemByClass('Jet', Laya.Image);
+                    ele.name = 'Jet';
+                    let num = 12 + Math.floor(Math.random() * 11);
+                    ele.skin = SkinUrl[num];
+                    ele.alpha = 1;
+                    parent.addChild(ele);
+                    ele.pos(x, y);
+                    let scirpt = ele.getComponent(leftOrRightJet);
+                    if (!scirpt) {
+                        ele.addComponent(leftOrRightJet);
+                        let scirpt1 = ele.getComponent(leftOrRightJet);
+                        scirpt1.direction = direction;
+                        scirpt1.initProperty();
+                    }
+                    else {
+                        scirpt.direction = direction;
+                        scirpt.initProperty();
+                    }
+                }
+            }
+            Effects.createLeftOrRightJet = createLeftOrRightJet;
+            class leftOrRightJet extends lwg.Effects.EffectsBase {
+                initProperty() {
+                    if (this.direction === 'left') {
+                        this.startAngle = 100 * Math.random() - 90 + 45 - 10 - 20;
+                    }
+                    else if (this.direction === 'right') {
+                        this.startAngle = 100 * Math.random() + 90 + 45 + 20;
+                    }
+                    this.startSpeed = 10 * Math.random() + 3;
+                    this.startScale = 0.4 + Math.random() * 0.6;
+                    this.accelerated = 0.1;
+                    this.vanishTime = 300 + Math.random() * 50;
+                    this.randomRotate = 1 + Math.random() * 20;
+                }
+                moveRules() {
+                    this.timer++;
+                    if (this.timer >= this.vanishTime * 3 / 5) {
+                        this.self.alpha -= 0.1;
+                    }
+                    if (this.timer >= this.vanishTime) {
+                        this.self.removeSelf();
+                    }
+                    else {
+                        this.commonSpeedXYByAngle(this.startAngle, this.startSpeed);
+                    }
+                    this.self.rotation += this.randomRotate;
+                    if (this.self.scaleX < 0) {
+                        this.self.scaleX += 0.01;
+                    }
+                    else if (this.self.scaleX >= this.startScale) {
+                        this.self.scaleX -= 0.01;
+                    }
+                }
+            }
+            Effects.leftOrRightJet = leftOrRightJet;
         })(Effects = lwg.Effects || (lwg.Effects = {}));
         let Sk;
         (function (Sk) {
             Sk.gongzhuTem = new Laya.Templet();
+            Sk.aishaTem = new Laya.Templet();
+            Sk.changeTem = new Laya.Templet();
+            Sk.chijiTem = new Laya.Templet();
+            Sk.huiguniangTem = new Laya.Templet();
+            Sk.tianshiTem = new Laya.Templet();
+            Sk.xiaohongmaoTem = new Laya.Templet();
+            Sk.xiaohuangyaTem = new Laya.Templet();
+            Sk.zhenziTem = new Laya.Templet();
             Sk.wangziTem = new Laya.Templet();
             Sk.gouTem = new Laya.Templet();
             Sk.qingdi_01Tem = new Laya.Templet();
             Sk.qingdi_02Tem = new Laya.Templet();
             Sk.houmaTem = new Laya.Templet();
             Sk.houziTem = new Laya.Templet();
-            Sk.houseTem = new Laya.Templet();
             function skLoding() {
                 createGongzhuTem();
+                createAishaTem();
+                createChijiTem();
+                createChangeTem();
+                createHuiguniangTem();
+                createTianshiTem();
+                createXiaohongmaoTem();
+                createXiaohuangyaTem();
+                createZhenziTem();
                 createWangziTem();
                 createGouTem();
                 createQingdi_01Tem();
                 createQingdi_02Tem();
                 createHoumaTem();
                 createHouziTem();
-                createHouseTem();
             }
             Sk.skLoding = skLoding;
             function createGongzhuTem() {
-                Sk.gongzhuTem.on(Laya.Event.COMPLETE, this, null);
+                Sk.gongzhuTem.on(Laya.Event.COMPLETE, this, onCompelet);
                 Sk.gongzhuTem.on(Laya.Event.ERROR, this, onError);
                 Sk.gongzhuTem.loadAni("SK/gongzhu.sk");
             }
             Sk.createGongzhuTem = createGongzhuTem;
+            function createAishaTem() {
+                Sk.aishaTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.aishaTem.on(Laya.Event.ERROR, this, onError);
+                Sk.aishaTem.loadAni("SK/aisha.sk");
+            }
+            Sk.createAishaTem = createAishaTem;
+            function createChangeTem() {
+                Sk.changeTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.changeTem.on(Laya.Event.ERROR, this, onError);
+                Sk.changeTem.loadAni("SK/change.sk");
+            }
+            Sk.createChangeTem = createChangeTem;
+            function createChijiTem() {
+                Sk.chijiTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.chijiTem.on(Laya.Event.ERROR, this, onError);
+                Sk.chijiTem.loadAni("SK/chiji.sk");
+            }
+            Sk.createChijiTem = createChijiTem;
+            function createHuiguniangTem() {
+                Sk.huiguniangTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.huiguniangTem.on(Laya.Event.ERROR, this, onError);
+                Sk.huiguniangTem.loadAni("SK/huiguniang.sk");
+            }
+            Sk.createHuiguniangTem = createHuiguniangTem;
+            function createTianshiTem() {
+                Sk.tianshiTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.tianshiTem.on(Laya.Event.ERROR, this, onError);
+                Sk.tianshiTem.loadAni("SK/tianshi.sk");
+            }
+            Sk.createTianshiTem = createTianshiTem;
+            function createXiaohongmaoTem() {
+                Sk.xiaohongmaoTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.xiaohongmaoTem.on(Laya.Event.ERROR, this, onError);
+                Sk.xiaohongmaoTem.loadAni("SK/xiaohongmao.sk");
+            }
+            Sk.createXiaohongmaoTem = createXiaohongmaoTem;
+            function createXiaohuangyaTem() {
+                Sk.xiaohuangyaTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.xiaohuangyaTem.on(Laya.Event.ERROR, this, onError);
+                Sk.xiaohuangyaTem.loadAni("SK/xiaohuangya.sk");
+            }
+            Sk.createXiaohuangyaTem = createXiaohuangyaTem;
+            function createZhenziTem() {
+                Sk.zhenziTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.zhenziTem.on(Laya.Event.ERROR, this, onError);
+                Sk.zhenziTem.loadAni("SK/zhenzi.sk");
+            }
+            Sk.createZhenziTem = createZhenziTem;
             function createWangziTem() {
-                Sk.wangziTem.on(Laya.Event.COMPLETE, this, null);
+                Sk.wangziTem.on(Laya.Event.COMPLETE, this, onCompelet);
                 Sk.wangziTem.on(Laya.Event.ERROR, this, onError);
                 Sk.wangziTem.loadAni("SK/wangzi.sk");
             }
             Sk.createWangziTem = createWangziTem;
             function createGouTem() {
-                Sk.gouTem.on(Laya.Event.COMPLETE, this, null);
+                Sk.gouTem.on(Laya.Event.COMPLETE, this, onCompelet);
                 Sk.gouTem.on(Laya.Event.ERROR, this, onError);
                 Sk.gouTem.loadAni("SK/gou.sk");
             }
             Sk.createGouTem = createGouTem;
             function createQingdi_01Tem() {
-                Sk.qingdi_01Tem.on(Laya.Event.COMPLETE, this, null);
+                Sk.qingdi_01Tem.on(Laya.Event.COMPLETE, this, onCompelet);
                 Sk.qingdi_01Tem.on(Laya.Event.ERROR, this, onError);
                 Sk.qingdi_01Tem.loadAni("SK/qingdi.sk");
             }
             Sk.createQingdi_01Tem = createQingdi_01Tem;
             function createQingdi_02Tem() {
-                Sk.qingdi_02Tem.on(Laya.Event.COMPLETE, this, null);
+                Sk.qingdi_02Tem.on(Laya.Event.COMPLETE, this, onCompelet);
                 Sk.qingdi_02Tem.on(Laya.Event.ERROR, this, onError);
                 Sk.qingdi_02Tem.loadAni("SK/qingdi1.sk");
             }
             Sk.createQingdi_02Tem = createQingdi_02Tem;
             function createHoumaTem() {
-                Sk.houmaTem.on(Laya.Event.COMPLETE, this, null);
+                Sk.houmaTem.on(Laya.Event.COMPLETE, this, onCompelet);
                 Sk.houmaTem.on(Laya.Event.ERROR, this, onError);
                 Sk.houmaTem.loadAni("SK/houma.sk");
             }
             Sk.createHoumaTem = createHoumaTem;
             function createHouziTem() {
-                Sk.houziTem.on(Laya.Event.COMPLETE, this, null);
+                Sk.houziTem.on(Laya.Event.COMPLETE, this, onCompelet);
                 Sk.houziTem.on(Laya.Event.ERROR, this, onError);
                 Sk.houziTem.loadAni("SK/houzi.sk");
             }
             Sk.createHouziTem = createHouziTem;
-            function createHouseTem() {
-                Sk.houseTem.on(Laya.Event.COMPLETE, this, null);
-                Sk.houseTem.on(Laya.Event.ERROR, this, onError);
-                Sk.houseTem.loadAni("SK/house.sk");
+            function onCompelet(tem) {
+                console.log(tem['_skBufferUrl'], '加载成功');
             }
-            Sk.createHouseTem = createHouseTem;
-            function onError() {
-                console.log('加载失败！');
+            Sk.onCompelet = onCompelet;
+            function onError(url) {
+                console.log(url, '加载失败！');
             }
             Sk.onError = onError;
         })(Sk = lwg.Sk || (lwg.Sk = {}));
@@ -915,17 +1262,22 @@
             let HintDec;
             (function (HintDec) {
                 HintDec[HintDec["\u91D1\u5E01\u4E0D\u591F\u4E86\uFF01"] = 0] = "\u91D1\u5E01\u4E0D\u591F\u4E86\uFF01";
-                HintDec[HintDec["\u6CA1\u6709\u53EF\u4EE5\u5356\u7684\u76AE\u80A4\u4E86\uFF01"] = 1] = "\u6CA1\u6709\u53EF\u4EE5\u5356\u7684\u76AE\u80A4\u4E86\uFF01";
+                HintDec[HintDec["\u6CA1\u6709\u53EF\u4EE5\u8D2D\u4E70\u7684\u76AE\u80A4\u4E86\uFF01"] = 1] = "\u6CA1\u6709\u53EF\u4EE5\u8D2D\u4E70\u7684\u76AE\u80A4\u4E86\uFF01";
                 HintDec[HintDec["\u6682\u65F6\u6CA1\u6709\u5E7F\u544A\uFF0C\u8FC7\u4F1A\u513F\u518D\u8BD5\u8BD5\u5427\uFF01"] = 2] = "\u6682\u65F6\u6CA1\u6709\u5E7F\u544A\uFF0C\u8FC7\u4F1A\u513F\u518D\u8BD5\u8BD5\u5427\uFF01";
                 HintDec[HintDec["\u6682\u65E0\u76AE\u80A4!"] = 3] = "\u6682\u65E0\u76AE\u80A4!";
                 HintDec[HintDec["\u6682\u65E0\u5206\u4EAB!"] = 4] = "\u6682\u65E0\u5206\u4EAB!";
                 HintDec[HintDec["\u6682\u65E0\u63D0\u793A\u673A\u4F1A!"] = 5] = "\u6682\u65E0\u63D0\u793A\u673A\u4F1A!";
                 HintDec[HintDec["\u89C2\u770B\u5B8C\u6574\u5E7F\u544A\u624D\u80FD\u83B7\u53D6\u5956\u52B1\u54E6\uFF01"] = 6] = "\u89C2\u770B\u5B8C\u6574\u5E7F\u544A\u624D\u80FD\u83B7\u53D6\u5956\u52B1\u54E6\uFF01";
-                HintDec[HintDec["\u6CA1\u6709\u8FC7\u5173\u54E6\uFF0C\u518D\u63A5\u518D\u5389\uFF01"] = 7] = "\u6CA1\u6709\u8FC7\u5173\u54E6\uFF0C\u518D\u63A5\u518D\u5389\uFF01";
+                HintDec[HintDec["\u901A\u5173\u4E0A\u4E00\u5173\u624D\u80FD\u89E3\u9501\u672C\u5173\uFF01"] = 7] = "\u901A\u5173\u4E0A\u4E00\u5173\u624D\u80FD\u89E3\u9501\u672C\u5173\uFF01";
                 HintDec[HintDec["\u5206\u4EAB\u6210\u529F\u540E\u624D\u80FD\u83B7\u53D6\u5956\u52B1\uFF01"] = 8] = "\u5206\u4EAB\u6210\u529F\u540E\u624D\u80FD\u83B7\u53D6\u5956\u52B1\uFF01";
                 HintDec[HintDec["\u5206\u4EAB\u6210\u529F"] = 9] = "\u5206\u4EAB\u6210\u529F";
                 HintDec[HintDec["\u6682\u65E0\u89C6\u9891\uFF0C\u73A9\u4E00\u5C40\u6E38\u620F\u4E4B\u540E\u5206\u4EAB\uFF01"] = 10] = "\u6682\u65E0\u89C6\u9891\uFF0C\u73A9\u4E00\u5C40\u6E38\u620F\u4E4B\u540E\u5206\u4EAB\uFF01";
                 HintDec[HintDec["\u6D88\u80172\u70B9\u4F53\u529B\uFF01"] = 11] = "\u6D88\u80172\u70B9\u4F53\u529B\uFF01";
+                HintDec[HintDec["\u4ECA\u65E5\u4F53\u529B\u798F\u5229\u5DF2\u9886\u53D6\uFF01"] = 12] = "\u4ECA\u65E5\u4F53\u529B\u798F\u5229\u5DF2\u9886\u53D6\uFF01";
+                HintDec[HintDec["\u5206\u4EAB\u6210\u529F\uFF0C\u83B7\u5F97125\u91D1\u5E01\uFF01"] = 13] = "\u5206\u4EAB\u6210\u529F\uFF0C\u83B7\u5F97125\u91D1\u5E01\uFF01";
+                HintDec[HintDec["\u9650\u5B9A\u76AE\u80A4\u5DF2\u7ECF\u83B7\u5F97\uFF0C\u8BF7\u524D\u5F80\u5546\u5E97\u67E5\u770B\u3002"] = 14] = "\u9650\u5B9A\u76AE\u80A4\u5DF2\u7ECF\u83B7\u5F97\uFF0C\u8BF7\u524D\u5F80\u5546\u5E97\u67E5\u770B\u3002";
+                HintDec[HintDec["\u5206\u4EAB\u5931\u8D25\uFF01"] = 15] = "\u5206\u4EAB\u5931\u8D25\uFF01";
+                HintDec[HintDec["\u5151\u6362\u7801\u9519\u8BEF\uFF01"] = 16] = "\u5151\u6362\u7801\u9519\u8BEF\uFF01";
             })(HintDec = Enum.HintDec || (Enum.HintDec = {}));
             let HintType;
             (function (HintType) {
@@ -941,45 +1293,91 @@
                 HintType[HintType["sharesuccess"] = 9] = "sharesuccess";
                 HintType[HintType["novideo"] = 10] = "novideo";
                 HintType[HintType["consumeEx"] = 11] = "consumeEx";
+                HintType[HintType["no_exemptExTime"] = 12] = "no_exemptExTime";
+                HintType[HintType["shareyes"] = 13] = "shareyes";
+                HintType[HintType["getXD"] = 14] = "getXD";
+                HintType[HintType["sharefailNoAward"] = 15] = "sharefailNoAward";
+                HintType[HintType["inputerr"] = 16] = "inputerr";
             })(HintType = Enum.HintType || (Enum.HintType = {}));
             let PifuOrder;
             (function (PifuOrder) {
-                PifuOrder[PifuOrder["01_xiaofu"] = 0] = "01_xiaofu";
-                PifuOrder[PifuOrder["02_konglong"] = 1] = "02_konglong";
-                PifuOrder[PifuOrder["03_xueren"] = 2] = "03_xueren";
-                PifuOrder[PifuOrder["04_qipao"] = 3] = "04_qipao";
-                PifuOrder[PifuOrder["05_qianxun"] = 4] = "05_qianxun";
-                PifuOrder[PifuOrder["06_lvyifu"] = 5] = "06_lvyifu";
-                PifuOrder[PifuOrder["07_maozi"] = 6] = "07_maozi";
-                PifuOrder[PifuOrder["08_lufei"] = 7] = "08_lufei";
-                PifuOrder[PifuOrder["09_chaoren"] = 8] = "09_chaoren";
+                PifuOrder[PifuOrder["01_gongzhu"] = 0] = "01_gongzhu";
+                PifuOrder[PifuOrder["02_chiji"] = 1] = "02_chiji";
+                PifuOrder[PifuOrder["03_change"] = 2] = "03_change";
+                PifuOrder[PifuOrder["04_huiguniang"] = 3] = "04_huiguniang";
+                PifuOrder[PifuOrder["05_tianshi"] = 4] = "05_tianshi";
+                PifuOrder[PifuOrder["06_xiaohongmao"] = 5] = "06_xiaohongmao";
+                PifuOrder[PifuOrder["07_xiaohuangya"] = 6] = "07_xiaohuangya";
+                PifuOrder[PifuOrder["08_zhenzi"] = 7] = "08_zhenzi";
+                PifuOrder[PifuOrder["09_aisha"] = 8] = "09_aisha";
             })(PifuOrder = Enum.PifuOrder || (Enum.PifuOrder = {}));
-            let ClickType;
-            (function (ClickType) {
-                ClickType["noEffect"] = "noEffect";
-                ClickType["largen"] = "largen";
-                ClickType["balloon"] = "balloon";
-                ClickType["beetle"] = "beetle";
-            })(ClickType = Enum.ClickType || (Enum.ClickType = {}));
-            let voiceUrl;
-            (function (voiceUrl) {
-                voiceUrl["btn"] = "Voice/btn.wav";
-                voiceUrl["bgm"] = "Voice/bgm.mp3";
-                voiceUrl["victory"] = "Voice/guoguan.wav";
-                voiceUrl["defeated"] = "Voice/wancheng.wav";
-            })(voiceUrl = Enum.voiceUrl || (Enum.voiceUrl = {}));
             let PifuAllName;
             (function (PifuAllName) {
-                PifuAllName[PifuAllName["01_xiaofu"] = 0] = "01_xiaofu";
-                PifuAllName[PifuAllName["02_konglong"] = 1] = "02_konglong";
-                PifuAllName[PifuAllName["03_xueren"] = 2] = "03_xueren";
-                PifuAllName[PifuAllName["04_qipao"] = 3] = "04_qipao";
-                PifuAllName[PifuAllName["05_qianxun"] = 4] = "05_qianxun";
-                PifuAllName[PifuAllName["06_lvyifu"] = 5] = "06_lvyifu";
-                PifuAllName[PifuAllName["07_maozi"] = 6] = "07_maozi";
-                PifuAllName[PifuAllName["08_lufei"] = 7] = "08_lufei";
-                PifuAllName[PifuAllName["09_chaoren"] = 8] = "09_chaoren";
+                PifuAllName[PifuAllName["01_gongzhu"] = 0] = "01_gongzhu";
+                PifuAllName[PifuAllName["02_chiji"] = 1] = "02_chiji";
+                PifuAllName[PifuAllName["03_change"] = 2] = "03_change";
+                PifuAllName[PifuAllName["04_huiguniang"] = 3] = "04_huiguniang";
+                PifuAllName[PifuAllName["05_tianshi"] = 4] = "05_tianshi";
+                PifuAllName[PifuAllName["06_xiaohongmao"] = 5] = "06_xiaohongmao";
+                PifuAllName[PifuAllName["07_xiaohuangya"] = 6] = "07_xiaohuangya";
+                PifuAllName[PifuAllName["08_zhenzi"] = 7] = "08_zhenzi";
+                PifuAllName[PifuAllName["09_aisha"] = 8] = "09_aisha";
             })(PifuAllName = Enum.PifuAllName || (Enum.PifuAllName = {}));
+            let PifuMatching;
+            (function (PifuMatching) {
+                PifuMatching["gongzhu"] = "01_gongzhu";
+                PifuMatching["chiji"] = "02_chiji";
+                PifuMatching["change"] = "03_change";
+                PifuMatching["huiguniang"] = "04_huiguniang";
+                PifuMatching["tianshi"] = "05_tianshi";
+                PifuMatching["xiaohongmao"] = "06_xiaohongmao";
+                PifuMatching["xiaohuangya"] = "07_xiaohuangya";
+                PifuMatching["zhenzi"] = "08_zhenzi";
+                PifuMatching["aisha"] = "09_aisha";
+            })(PifuMatching = Enum.PifuMatching || (Enum.PifuMatching = {}));
+            let PifuSkin;
+            (function (PifuSkin) {
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_01_gongzhu.png"] = 0] = "UI_new/Pifu/pifu_01_gongzhu.png";
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_02_chiji.png"] = 1] = "UI_new/Pifu/pifu_02_chiji.png";
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_03_change.png"] = 2] = "UI_new/Pifu/pifu_03_change.png";
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_04_huiguniang.png"] = 3] = "UI_new/Pifu/pifu_04_huiguniang.png";
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_05_tianshi.png"] = 4] = "UI_new/Pifu/pifu_05_tianshi.png";
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_06_xiaohongmao.png"] = 5] = "UI_new/Pifu/pifu_06_xiaohongmao.png";
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_07_xiaohuangya.png"] = 6] = "UI_new/Pifu/pifu_07_xiaohuangya.png";
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_08_zhenzi.png"] = 7] = "UI_new/Pifu/pifu_08_zhenzi.png";
+                PifuSkin[PifuSkin["UI_new/Pifu/pifu_09_aisha.png"] = 8] = "UI_new/Pifu/pifu_09_aisha.png";
+            })(PifuSkin = Enum.PifuSkin || (Enum.PifuSkin = {}));
+            let PifuSkin_No;
+            (function (PifuSkin_No) {
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_01_gongzhu_h.png"] = 0] = "UI_new/Pifu/pifu_01_gongzhu_h.png";
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_02_chiji_h.png"] = 1] = "UI_new/Pifu/pifu_02_chiji_h.png";
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_03_change_h.png"] = 2] = "UI_new/Pifu/pifu_03_change_h.png";
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_04_huiguniang_h.png"] = 3] = "UI_new/Pifu/pifu_04_huiguniang_h.png";
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_05_tianshi_h.png"] = 4] = "UI_new/Pifu/pifu_05_tianshi_h.png";
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_06_xiaohongmao_h.png"] = 5] = "UI_new/Pifu/pifu_06_xiaohongmao_h.png";
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_07_xiaohuangya_h.png"] = 6] = "UI_new/Pifu/pifu_07_xiaohuangya_h.png";
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_08_zhenzi_h.png"] = 7] = "UI_new/Pifu/pifu_08_zhenzi_h.png";
+                PifuSkin_No[PifuSkin_No["UI_new/Pifu/pifu_09_aisha_h.png"] = 8] = "UI_new/Pifu/pifu_09_aisha_h.png";
+            })(PifuSkin_No = Enum.PifuSkin_No || (Enum.PifuSkin_No = {}));
+            let PifuNameSkin;
+            (function (PifuNameSkin) {
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_xueer.png"] = 0] = "UI_new/Pifu/word_xueer.png";
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_jingying.png"] = 1] = "UI_new/Pifu/word_jingying.png";
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_change.png"] = 2] = "UI_new/Pifu/word_change.png";
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_hui.png"] = 3] = "UI_new/Pifu/word_hui.png";
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_tianshi.png"] = 4] = "UI_new/Pifu/word_tianshi.png";
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/wrod_hongmao.png"] = 5] = "UI_new/Pifu/wrod_hongmao.png";
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_huangya.png"] = 6] = "UI_new/Pifu/word_huangya.png";
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_changfa.png"] = 7] = "UI_new/Pifu/word_changfa.png";
+                PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_bingjing.png"] = 8] = "UI_new/Pifu/word_bingjing.png";
+            })(PifuNameSkin = Enum.PifuNameSkin || (Enum.PifuNameSkin = {}));
+            let voiceUrl;
+            (function (voiceUrl) {
+                voiceUrl["btn"] = "voice/btn.wav";
+                voiceUrl["bgm"] = "voice/bgm.mp3";
+                voiceUrl["victory"] = "voice/guoguan.wav";
+                voiceUrl["defeated"] = "voice/wancheng.wav";
+            })(voiceUrl = Enum.voiceUrl || (Enum.voiceUrl = {}));
             let PifuAllName_Ch;
             (function (PifuAllName_Ch) {
                 PifuAllName_Ch[PifuAllName_Ch["\u540C\u684C"] = 0] = "\u540C\u684C";
@@ -992,30 +1390,6 @@
                 PifuAllName_Ch[PifuAllName_Ch["\u9646\u80A5"] = 7] = "\u9646\u80A5";
                 PifuAllName_Ch[PifuAllName_Ch["\u82F1\u96C4"] = 8] = "\u82F1\u96C4";
             })(PifuAllName_Ch = Enum.PifuAllName_Ch || (Enum.PifuAllName_Ch = {}));
-            let PifuSkin;
-            (function (PifuSkin) {
-                PifuSkin[PifuSkin["pifu/pifu_01_xiaofu.png"] = 0] = "pifu/pifu_01_xiaofu.png";
-                PifuSkin[PifuSkin["pifu/pifu_02_konglong.png"] = 1] = "pifu/pifu_02_konglong.png";
-                PifuSkin[PifuSkin["pifu/pifu_03_xueren.png"] = 2] = "pifu/pifu_03_xueren.png";
-                PifuSkin[PifuSkin["pifu/pifu_04_qipao.png"] = 3] = "pifu/pifu_04_qipao.png";
-                PifuSkin[PifuSkin["pifu/pifu_05_qianxun.png"] = 4] = "pifu/pifu_05_qianxun.png";
-                PifuSkin[PifuSkin["pifu/pifu_06_lvyifu.png"] = 5] = "pifu/pifu_06_lvyifu.png";
-                PifuSkin[PifuSkin["pifu/pifu_07_maozi.png"] = 6] = "pifu/pifu_07_maozi.png";
-                PifuSkin[PifuSkin["pifu/pifu_08_lufei.png"] = 7] = "pifu/pifu_08_lufei.png";
-                PifuSkin[PifuSkin["pifu/pifu_09_chaoren.png"] = 8] = "pifu/pifu_09_chaoren.png";
-            })(PifuSkin = Enum.PifuSkin || (Enum.PifuSkin = {}));
-            let PifuSkin_No;
-            (function (PifuSkin_No) {
-                PifuSkin_No[PifuSkin_No["pifu/pifu_01_xiaofu_h.png"] = 0] = "pifu/pifu_01_xiaofu_h.png";
-                PifuSkin_No[PifuSkin_No["pifu/pifu_02_konglong_h.png"] = 1] = "pifu/pifu_02_konglong_h.png";
-                PifuSkin_No[PifuSkin_No["pifu/pifu_03_xueren_h.png"] = 2] = "pifu/pifu_03_xueren_h.png";
-                PifuSkin_No[PifuSkin_No["pifu/pifu_04_qipao_h.png"] = 3] = "pifu/pifu_04_qipao_h.png";
-                PifuSkin_No[PifuSkin_No["pifu/pifu_05_qianxun_h.png"] = 4] = "pifu/pifu_05_qianxun_h.png";
-                PifuSkin_No[PifuSkin_No["pifu/pifu_06_lvyifu_h.png"] = 5] = "pifu/pifu_06_lvyifu_h.png";
-                PifuSkin_No[PifuSkin_No["pifu/pifu_07_maozi_h.png"] = 6] = "pifu/pifu_07_maozi_h.png";
-                PifuSkin_No[PifuSkin_No["pifu/pifu_08_lufei_h.png"] = 7] = "pifu/pifu_08_lufei_h.png";
-                PifuSkin_No[PifuSkin_No["pifu/pifu_09_chaoren_h.png"] = 8] = "pifu/pifu_09_chaoren_h.png";
-            })(PifuSkin_No = Enum.PifuSkin_No || (Enum.PifuSkin_No = {}));
             let TaskType;
             (function (TaskType) {
                 TaskType["topUp"] = "topUp";
@@ -1030,15 +1404,6 @@
                 PersonDir["left"] = "left";
                 PersonDir["right"] = "right";
             })(PersonDir = Enum.PersonDir || (Enum.PersonDir = {}));
-            let SceneName;
-            (function (SceneName) {
-                SceneName["UILoding"] = "UILoding";
-                SceneName["UIMain"] = "UIMain";
-                SceneName["UIStart"] = "UIStart";
-                SceneName["UITask"] = "UITask";
-                SceneName["UIVictory"] = "UIVictory";
-                SceneName["UIDefeated"] = "UIDefeated";
-            })(SceneName = Enum.SceneName || (Enum.SceneName = {}));
             let GameState;
             (function (GameState) {
                 GameState["GameStart"] = "GameStart";
@@ -1082,6 +1447,30 @@
                 RoomSkin["yellow"] = "Room/room_yellow.png";
                 RoomSkin["yellowish"] = "Room/room_yellowish.png";
             })(RoomSkin = Enum.RoomSkin || (Enum.RoomSkin = {}));
+            let RoomSkinZoder;
+            (function (RoomSkinZoder) {
+                RoomSkinZoder[RoomSkinZoder["Room/room_blue.png"] = 0] = "Room/room_blue.png";
+                RoomSkinZoder[RoomSkinZoder["Room/room_bluish.png"] = 1] = "Room/room_bluish.png";
+                RoomSkinZoder[RoomSkinZoder["Room/room_grass.png"] = 2] = "Room/room_grass.png";
+                RoomSkinZoder[RoomSkinZoder["Room/room_green.png"] = 3] = "Room/room_green.png";
+                RoomSkinZoder[RoomSkinZoder["Room/room_pink.png"] = 4] = "Room/room_pink.png";
+                RoomSkinZoder[RoomSkinZoder["Room/room_purple.png"] = 5] = "Room/room_purple.png";
+                RoomSkinZoder[RoomSkinZoder["Room/room_red.png"] = 6] = "Room/room_red.png";
+                RoomSkinZoder[RoomSkinZoder["Room/room_yellow.png"] = 7] = "Room/room_yellow.png";
+                RoomSkinZoder[RoomSkinZoder["Room/room_yellowish.png"] = 8] = "Room/room_yellowish.png";
+            })(RoomSkinZoder = Enum.RoomSkinZoder || (Enum.RoomSkinZoder = {}));
+            let WallpaperSkin;
+            (function (WallpaperSkin) {
+                WallpaperSkin[WallpaperSkin["Room/room_blue_wallpaper.png"] = 0] = "Room/room_blue_wallpaper.png";
+                WallpaperSkin[WallpaperSkin["Room/room_bluish_wallpaper.png"] = 1] = "Room/room_bluish_wallpaper.png";
+                WallpaperSkin[WallpaperSkin["Room/room_grass_wallpaper.png"] = 2] = "Room/room_grass_wallpaper.png";
+                WallpaperSkin[WallpaperSkin["Room/room_green_wallpaper.png"] = 3] = "Room/room_green_wallpaper.png";
+                WallpaperSkin[WallpaperSkin["Room/room_pink_wallpaper.png"] = 4] = "Room/room_pink_wallpaper.png";
+                WallpaperSkin[WallpaperSkin["Room/room_purple_wallpaper.png"] = 5] = "Room/room_purple_wallpaper.png";
+                WallpaperSkin[WallpaperSkin["Room/room_red_wallpaper.png"] = 6] = "Room/room_red_wallpaper.png";
+                WallpaperSkin[WallpaperSkin["Room/room_yellow_wallpaper.png"] = 7] = "Room/room_yellow_wallpaper.png";
+                WallpaperSkin[WallpaperSkin["Room/room_yellowish_wallpaper.png"] = 8] = "Room/room_yellowish_wallpaper.png";
+            })(WallpaperSkin = Enum.WallpaperSkin || (Enum.WallpaperSkin = {}));
             let WallSkin;
             (function (WallSkin) {
                 WallSkin["blue"] = "Room/room_blue_wall.png";
@@ -1093,6 +1482,7 @@
                 WallSkin["red"] = "Room/room_red_wall.png";
                 WallSkin["yellow"] = "Room/room_yellow_wall.png";
                 WallSkin["yellowish"] = "Room/room_yellowish_wall.png";
+                WallSkin["common"] = "Room/room_common_wall.png";
             })(WallSkin = Enum.WallSkin || (Enum.WallSkin = {}));
             let AisleColorSkin;
             (function (AisleColorSkin) {
@@ -1105,6 +1495,7 @@
                 AisleColorSkin["red"] = "Room/room_red_color.png";
                 AisleColorSkin["yellow"] = "Room/room_yellow_color.png";
                 AisleColorSkin["yellowish"] = "Room/room_yellowish_color.png";
+                AisleColorSkin["common"] = "Room/room_common_color.png";
             })(AisleColorSkin = Enum.AisleColorSkin || (Enum.AisleColorSkin = {}));
             let gongzhuAni;
             (function (gongzhuAni) {
@@ -1147,8 +1538,8 @@
             let bulletSkin;
             (function (bulletSkin) {
                 bulletSkin["yellow"] = "Frame/UI/ui_circle_c_008.png";
-                bulletSkin["bule"] = "Frame/UI/ui_circle_c_006.png";
-                bulletSkin["green"] = "Frame/UI/ui_circle_c_001.png";
+                bulletSkin["bule"] = "Frame/UI/ui_circle_006.png";
+                bulletSkin["green"] = "Frame/UI/ui_circle_001.png";
             })(bulletSkin = Enum.bulletSkin || (Enum.bulletSkin = {}));
             let enemyType;
             (function (enemyType) {
@@ -1165,13 +1556,13 @@
         })(Enum = lwg.Enum || (lwg.Enum = {}));
         let Click;
         (function (Click) {
-            let Type;
-            (function (Type) {
-                Type["noEffect"] = "noEffect";
-                Type["largen"] = "largen";
-                Type["balloon"] = "balloon";
-                Type["beetle"] = "beetle";
-            })(Type = Click.Type || (Click.Type = {}));
+            let ClickType;
+            (function (ClickType) {
+                ClickType["noEffect"] = "noEffect";
+                ClickType["largen"] = "largen";
+                ClickType["balloon"] = "balloon";
+                ClickType["beetle"] = "beetle";
+            })(ClickType = Click.ClickType || (Click.ClickType = {}));
             function on(effect, audioUrl, target, caller, down, move, up, out) {
                 let btnEffect;
                 if (audioUrl) {
@@ -1181,16 +1572,16 @@
                     Click.audioUrl = Enum.voiceUrl.btn;
                 }
                 switch (effect) {
-                    case 'noEffect':
+                    case ClickType.noEffect:
                         btnEffect = new Btn_NoEffect();
                         break;
-                    case 'largen':
+                    case ClickType.largen:
                         btnEffect = new Btn_LargenEffect();
                         break;
-                    case 'balloon':
+                    case ClickType.balloon:
                         btnEffect = new Btn_Balloon();
                         break;
-                    case 'beetle':
+                    case ClickType.balloon:
                         btnEffect = new Btn_Beetle();
                         break;
                     default:
@@ -1276,7 +1667,7 @@
             }
             down(event) {
                 event.currentTarget.scale(1.1, 1.1);
-                if (lwg.Global._voiceSwitch) {
+                if (lwg.PalyAudio._voiceSwitch) {
                     Laya.SoundManager.playSound(Click.audioUrl, 1, Laya.Handler.create(this, function () { }));
                 }
             }
@@ -1431,7 +1822,7 @@
                 }), delayed);
             }
             Animation.move_Fade_Out = move_Fade_Out;
-            function move_FadeOut_Scale(node, firstX, firstY, targetX, targetY, time, delayed, func) {
+            function move_FadeOut_Scale_01(node, firstX, firstY, targetX, targetY, time, delayed, func) {
                 node.alpha = 0;
                 node.targetX = 0;
                 node.targetY = 0;
@@ -1443,7 +1834,32 @@
                     }
                 }), delayed);
             }
-            Animation.move_FadeOut_Scale = move_FadeOut_Scale;
+            Animation.move_FadeOut_Scale_01 = move_FadeOut_Scale_01;
+            function move_Scale(node, fScale, fX, fY, tX, tY, eScale, time, delayed, func) {
+                node.scaleX = fScale;
+                node.scaleY = fScale;
+                node.x = fX;
+                node.y = fY;
+                Laya.Tween.to(node, { x: tX, y: tY, scaleX: eScale, scaleY: eScale }, time, null, Laya.Handler.create(this, function () {
+                    if (func !== null) {
+                        func();
+                    }
+                }), delayed);
+            }
+            Animation.move_Scale = move_Scale;
+            function rotate_Scale(target, fRotate, fScaleX, fScaleY, eRotate, eScaleX, eScaleY, time, delayed, func) {
+                target.scaleX = fScaleX;
+                target.scaleY = fScaleY;
+                target.rotation = fRotate;
+                Laya.Tween.to(target, { rotation: eRotate, scaleX: eScaleX, scaleY: eScaleY }, time, null, Laya.Handler.create(this, function () {
+                    Laya.Tween.to(target, { rotation: 0, scaleX: 1, scaleY: 1 }, time / 2, null, Laya.Handler.create(this, function () {
+                        if (func !== null) {
+                            func();
+                        }
+                    }), delayed);
+                }), 0);
+            }
+            Animation.rotate_Scale = rotate_Scale;
             function drop_Simple(node, targetY, rotation, time, delayed, func) {
                 Laya.Tween.to(node, { y: targetY, rotation: rotation }, time, Laya.Ease.expoIn, Laya.Handler.create(this, function () {
                     if (func !== null) {
@@ -1700,6 +2116,17 @@
                 }), 0);
             }
             Animation.HintAni_01 = HintAni_01;
+            function scale_Alpha(target, fAlpha, fScaleX, fScaleY, eScaleX, eScaleY, eAlpha, time, delayed, func) {
+                target.alpha = fAlpha;
+                target.scaleX = fScaleX;
+                target.scaleY = fScaleY;
+                Laya.Tween.to(target, { scaleX: eScaleX, scaleY: eScaleY, alpha: eAlpha }, time, null, Laya.Handler.create(this, function () {
+                    if (func !== null) {
+                        func();
+                    }
+                }), delayed);
+            }
+            Animation.scale_Alpha = scale_Alpha;
             function rotate_Magnify_KickBack(node, eAngle, eScale, time1, time2, delayed1, delayed2, func) {
                 node.alpha = 0;
                 node.scaleX = 0;
@@ -1721,12 +2148,17 @@
         })(Animation = lwg.Animation || (lwg.Animation = {}));
         let PalyAudio;
         (function (PalyAudio) {
+            PalyAudio._voiceSwitch = true;
             function playSound(url, number) {
-                Laya.SoundManager.playSound(url, number, Laya.Handler.create(this, function () { }));
+                if (PalyAudio._voiceSwitch) {
+                    Laya.SoundManager.playSound(url, number, Laya.Handler.create(this, function () { }));
+                }
             }
             PalyAudio.playSound = playSound;
             function playMusic(url, number, deley) {
-                Laya.SoundManager.playMusic(url, number, Laya.Handler.create(this, function () { }), deley);
+                if (PalyAudio._voiceSwitch) {
+                    Laya.SoundManager.playMusic(url, number, Laya.Handler.create(this, function () { }), deley);
+                }
             }
             PalyAudio.playMusic = playMusic;
             function stopMusic() {
@@ -1736,10 +2168,6 @@
         })(PalyAudio = lwg.PalyAudio || (lwg.PalyAudio = {}));
         let Tools;
         (function (Tools) {
-            function toHexString(r, g, b) {
-                return ("00000" + (r << 16 | g << 8 | b).toString(16)).slice(-6);
-            }
-            Tools.toHexString = toHexString;
             function drawPieMask(parent, startAngle, endAngle) {
                 parent.cacheAs = "bitmap";
                 let drawPieSpt = new Laya.Sprite();
@@ -1914,7 +2342,7 @@
         })(Tools = lwg.Tools || (lwg.Tools = {}));
     })(lwg || (lwg = {}));
 
-    class UIMain_Enemy extends lwg.Admin.Person {
+    class UIMain_Enemy extends lwg.Admin.Object {
         lwgInit() {
             let num = this.self.getChildByName('Num');
             num.text = (Math.floor(Math.random() * 10) + 1).toString();
@@ -2015,6 +2443,8 @@
             this.bulletNum = 0;
             this.self['Protagonist'].addComponent(UIMain_Protagonist);
             lwg.Global._gameStart = true;
+            this.self['GuideLine'].alpha = 0;
+            this.touchColor = null;
         }
         createEnemy() {
             let enemy;
@@ -2054,34 +2484,53 @@
             return bullet;
         }
         btnOnClick() {
-            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
-            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
-            lwg.Click.on(lwg.Click.Type.noEffect, null, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
+            lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
+            lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
+            lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
         }
         clickDwon(e) {
             this.touchColor = e.currentTarget;
-            console.log(this.touchColor);
             switch (this.touchColor.name) {
                 case 'BtnYellow':
                     this.launchType = lwg.Enum.bulletType.yellow;
                     this.self['BtnYellow'].scale(1.1, 1.1);
                     this.self['BtnBlue'].scale(1, 1);
                     this.self['BtnGreen'].scale(1, 1);
+                    this.self['GuideLine'].x = this.self['BtnYellow'].x;
+                    this.self['GuideLine'].y = this.self['BtnYellow'].y;
+                    this.self['GuideLine'].alpha = 1;
                     break;
                 case 'BtnBlue':
                     this.launchType = lwg.Enum.bulletType.bule;
                     this.self['BtnYellow'].scale(1, 1);
                     this.self['BtnBlue'].scale(1.1, 1.1);
                     this.self['BtnGreen'].scale(1, 1);
+                    this.self['GuideLine'].x = this.self['BtnBlue'].x;
+                    this.self['GuideLine'].y = this.self['BtnBlue'].y;
+                    this.self['GuideLine'].alpha = 1;
                     break;
                 case 'BtnGreen':
                     this.launchType = lwg.Enum.bulletType.green;
                     this.self['BtnYellow'].scale(1, 1);
                     this.self['BtnBlue'].scale(1, 1);
                     this.self['BtnGreen'].scale(1.1, 1.1);
+                    this.self['GuideLine'].x = this.self['BtnGreen'].x;
+                    this.self['GuideLine'].y = this.self['BtnGreen'].y;
+                    this.self['GuideLine'].alpha = 1;
                     break;
                 default:
                     break;
+            }
+        }
+        onStageMouseMove(e) {
+            if (this.touchColor !== null) {
+                let x = e.stageX;
+                let y = e.stageY;
+                let point = new Laya.Point(x, y);
+                let len = point.distance(this.touchColor.x, this.touchColor.y);
+                let line = this.self['GuideLine'].getChildByName('Line');
+                line.height = len;
+                let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
             }
         }
         onStageMouseUp(e) {
@@ -2097,8 +2546,9 @@
                     bullet.getComponent(UIMain_Bullet).movePoint = movePoint;
                     console.log(bullet.getComponent(UIMain_Bullet).movePoint);
                 }
-                this.touchColor = null;
             }
+            this.self['GuideLine'].alpha = 0;
+            this.touchColor = null;
         }
         lwgOnUpdate() {
             if (lwg.Global._gameStart) {
