@@ -1,9 +1,10 @@
-import { lwg } from "../Lwg_Template/lwg";
+import { lwg, EventAdmin } from "../Lwg_Template/lwg";
 import RecordManager from "../../TJ/RecordManager";
 import ADManager, { TaT } from "../../TJ/Admanager";
 import UIMain_Enemy from "./UIMain_Enemy";
 import UIMain_Protagonist from "./UIMain_Protagonist";
 import UIMain_Bullet from "./UIMain_Bullet";
+import { GEnum, G } from "../Lwg_Template/GameControl";
 
 export default class UIMain extends lwg.Admin.Scene {
     /** @prop {name:Enemy, tips:"敌人", type:Prefab, default:true}*/
@@ -28,7 +29,9 @@ export default class UIMain extends lwg.Admin.Scene {
         lwg.Global._gameStart = true;
         this.self['GuideLine'].alpha = 0;
         this.touchColor = null;
+
     }
+
 
     /**子弹数量*/
     bulletNum: number;
@@ -54,23 +57,24 @@ export default class UIMain extends lwg.Admin.Scene {
 
         let pic = bullet.getChildByName('Pic') as Laya.Image;
         switch (this.launchType) {
-            case lwg.Enum.bulletType.yellow:
-                pic.skin = lwg.Enum.bulletSkin.yellow;
-                bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.yellow;
+            case GEnum.bulletType.yellow:
+                pic.skin = GEnum.bulletSkin.yellow;
+                bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.yellow;
                 break;
-            case lwg.Enum.bulletType.bule:
-                pic.skin = lwg.Enum.bulletSkin.bule;
-                bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.bule;
+            case GEnum.bulletType.bule:
+                pic.skin = GEnum.bulletSkin.bule;
+                bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.bule;
                 break;
-            case lwg.Enum.bulletType.green:
-                pic.skin = lwg.Enum.bulletSkin.green;
-                bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.green;
+            case GEnum.bulletType.green:
+                pic.skin = GEnum.bulletSkin.green;
+                bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.green;
 
                 break;
 
             default:
                 break;
         }
+        G.bulletNum++;
         return bullet;
     }
 
@@ -86,7 +90,7 @@ export default class UIMain extends lwg.Admin.Scene {
         // console.log(this.touchColor);
         switch (this.touchColor.name) {
             case 'BtnYellow':
-                this.launchType = lwg.Enum.bulletType.yellow;
+                this.launchType = GEnum.bulletType.yellow;
                 this.self['BtnYellow'].scale(1.1, 1.1);
                 this.self['BtnBlue'].scale(1, 1);
                 this.self['BtnGreen'].scale(1, 1);
@@ -96,7 +100,7 @@ export default class UIMain extends lwg.Admin.Scene {
                 this.self['GuideLine'].alpha = 1;
                 break;
             case 'BtnBlue':
-                this.launchType = lwg.Enum.bulletType.bule;
+                this.launchType = GEnum.bulletType.bule;
                 this.self['BtnYellow'].scale(1, 1);
                 this.self['BtnBlue'].scale(1.1, 1.1);
                 this.self['BtnGreen'].scale(1, 1);
@@ -108,7 +112,7 @@ export default class UIMain extends lwg.Admin.Scene {
 
                 break;
             case 'BtnGreen':
-                this.launchType = lwg.Enum.bulletType.green;
+                this.launchType = GEnum.bulletType.green;
                 this.self['BtnYellow'].scale(1, 1);
                 this.self['BtnBlue'].scale(1, 1);
                 this.self['BtnGreen'].scale(1.1, 1.1);
@@ -135,6 +139,10 @@ export default class UIMain extends lwg.Admin.Scene {
             line.height = len;
 
             let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
+            this.self['GuideLine'].rotation = lwg.Tools.vectorAngle(movePoint.x, movePoint.y) - 90;
+            this.touchColor.rotation = this.self['GuideLine'].rotation;
+
+            this.self[this.touchColor.name]
         }
     }
 
@@ -151,10 +159,11 @@ export default class UIMain extends lwg.Admin.Scene {
                 movePoint.normalize();
                 // console.log(movePoint);
                 bullet.getComponent(UIMain_Bullet).movePoint = movePoint;
-                console.log(bullet.getComponent(UIMain_Bullet).movePoint);
+                bullet.rotation = this.self['GuideLine'].rotation;
             }
         }
         this.self['GuideLine'].alpha = 0;
+        // this.touchColor.rotation = 0;
         this.touchColor = null;
     }
 
@@ -162,11 +171,10 @@ export default class UIMain extends lwg.Admin.Scene {
     timer: number = 0;
     lwgOnUpdate(): void {
         if (lwg.Global._gameStart) {
-            this.timer++;
             if (this.timer % 180 === 0) {
                 this.createEnemy();
             }
+            this.timer++;
         }
     }
-
 }

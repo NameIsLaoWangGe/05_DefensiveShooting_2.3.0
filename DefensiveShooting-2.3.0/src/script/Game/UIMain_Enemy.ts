@@ -1,4 +1,5 @@
 import { lwg } from "../Lwg_Template/lwg";
+import { GEnum } from "../Lwg_Template/GameControl";
 
 export default class UIMain_Enemy extends lwg.Admin.Object {
 
@@ -6,27 +7,26 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
     enemyType: string;
     lwgInit(): void {
         let num = this.self.getChildByName('Num') as Laya.Label;
-        num.text = (Math.floor(Math.random() * 10) + 1).toString();
+        num.text = (Math.floor(Math.random() * 3) + 1).toString();
 
         let pic = this.self.getChildByName('Pic') as Laya.Image;
         let rand = Math.floor(Math.random() * 3);
 
         switch (rand) {
             case 0:
-                pic.skin = lwg.Enum.enemySkin.yellow;
-                this.enemyType = lwg.Enum.enemyType.yellow;
+                pic.skin = GEnum.enemySkin.yellow;
+                this.enemyType =GEnum.enemyType.yellow;
                 break;
 
             case 1:
-                pic.skin = lwg.Enum.enemySkin.bule;
-                this.enemyType = lwg.Enum.enemyType.bule;
+                pic.skin = GEnum.enemySkin.bule;
+                this.enemyType = GEnum.enemyType.bule;
 
                 break;
 
             case 2:
-                pic.skin = lwg.Enum.enemySkin.green;
-                this.enemyType = lwg.Enum.enemyType.green;
-
+                pic.skin = GEnum.enemySkin.green;
+                this.enemyType = GEnum.enemyType.green;
                 break;
 
             default:

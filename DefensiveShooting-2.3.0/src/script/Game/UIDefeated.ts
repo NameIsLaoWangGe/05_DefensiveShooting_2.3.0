@@ -64,7 +64,6 @@ export default class UIDefeated extends lwg.Admin.Scene {
         } else {
 
             lwg.Global._execution -= 2;
-            lwg.Global._createHint(lwg.Enum.HintType.consumeEx);
             lwg.Global.createConsumeEx(null);
             lwg.LocalStorage.addData();
 
@@ -87,7 +86,6 @@ export default class UIDefeated extends lwg.Admin.Scene {
             lwg.Global.intoBtn = 'BtnLast';
         } else {
             lwg.Global._execution -= 2;
-            lwg.Global._createHint(lwg.Enum.HintType.consumeEx);
             lwg.Global.createConsumeEx(null);
             lwg.LocalStorage.addData();
 

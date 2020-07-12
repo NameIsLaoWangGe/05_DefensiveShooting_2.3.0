@@ -1,142 +1,6 @@
 (function () {
     'use strict';
 
-    class ADManager {
-        constructor() {
-        }
-        static ShowBanner() {
-            if (TJ.API.AppInfo.Channel() == TJ.Define.Channel.AppRt.ZJTD_AppRt) {
-                return;
-            }
-            let p = new TJ.ADS.Param();
-            p.place = TJ.ADS.Place.BOTTOM | TJ.ADS.Place.CENTER;
-            TJ.ADS.Api.ShowBanner(p);
-        }
-        static CloseBanner() {
-            let p = new TJ.ADS.Param();
-            p.place = TJ.ADS.Place.BOTTOM | TJ.ADS.Place.CENTER;
-            TJ.ADS.Api.RemoveBanner(p);
-        }
-        static ShowNormal() {
-            TJ.API.AdService.ShowNormal(new TJ.API.AdService.Param());
-        }
-        static showNormal2() {
-            TJ.API.AdService.ShowNormal(new TJ.API.AdService.Param());
-        }
-        static ShowReward(rewardAction) {
-            lwg.PalyAudio.stopMusic();
-            console.log("?????");
-            let p = new TJ.ADS.Param();
-            p.extraAd = true;
-            let getReward = false;
-            p.cbi.Add(TJ.Define.Event.Reward, () => {
-                getReward = true;
-                lwg.PalyAudio.playMusic(lwg.Enum.voiceUrl.bgm, 0, 1000);
-                if (rewardAction != null)
-                    rewardAction();
-            });
-            p.cbi.Add(TJ.Define.Event.Close, () => {
-                if (!getReward) {
-                    lwg.PalyAudio.playMusic(lwg.Enum.voiceUrl.bgm, 0, 1000);
-                    lwg.Global._createHint(lwg.Enum.HintType.lookend);
-                }
-            });
-            p.cbi.Add(TJ.Define.Event.NoAds, () => {
-                lwg.PalyAudio.playMusic(lwg.Enum.voiceUrl.bgm, 0, 1000);
-                lwg.Global._createHint(lwg.Enum.HintType.noAdv);
-            });
-            TJ.ADS.Api.ShowReward(p);
-        }
-        static Event(param, value) {
-            console.log("Param:>" + param + "Value:>" + value);
-            let p = new TJ.GSA.Param();
-            if (value == null) {
-                p.id = param;
-            }
-            else {
-                p.id = param + value;
-            }
-            console.log(p.id);
-            TJ.GSA.Api.Event(p);
-        }
-        static initShare() {
-            if (TJ.API.AppInfo.Channel() == TJ.Define.Channel.AppRt.WX_AppRt) {
-                this.wx.onShareAppMessage(() => {
-                    return {
-                        title: this.shareContent,
-                        imageUrl: this.shareImgUrl,
-                        query: ""
-                    };
-                });
-                this.wx.showShareMenu({
-                    withShareTicket: true,
-                    success: null,
-                    fail: null,
-                    complete: null
-                });
-            }
-        }
-        static lureShare() {
-            if (TJ.API.AppInfo.Channel() == TJ.Define.Channel.AppRt.WX_AppRt) {
-                this.wx.shareAppMessage({
-                    title: this.shareContent,
-                    imageUrl: this.shareImgUrl,
-                    query: ""
-                });
-            }
-        }
-        static VibrateShort() {
-            TJ.API.Vibrate.Short();
-        }
-        static Vibratelong() {
-            TJ.API.Vibrate.Long();
-        }
-        static TAPoint(type, name) {
-            let p = new TJ.API.TA.Param();
-            p.id = name;
-            switch (type) {
-                case TaT.BtnShow:
-                    TJ.API.TA.Event_Button_Show(p);
-                    break;
-                case TaT.BtnClick:
-                    TJ.API.TA.Event_Button_Click(p);
-                    break;
-                case TaT.PageShow:
-                    TJ.API.TA.Event_Page_Show(p);
-                    break;
-                case TaT.PageEnter:
-                    TJ.API.TA.Event_Page_Enter(p);
-                    break;
-                case TaT.PageLeave:
-                    TJ.API.TA.Event_Page_Leave(p);
-                    break;
-                case TaT.LevelStart:
-                    TJ.API.TA.Event_Level_Start(p);
-                    break;
-                case TaT.LevelFail:
-                    TJ.API.TA.Event_Level_Fail(p);
-                    break;
-                case TaT.LevelFinish:
-                    TJ.API.TA.Event_Level_Finish(p);
-                    break;
-            }
-        }
-    }
-    ADManager.wx = Laya.Browser.window.wx;
-    ADManager.shareImgUrl = "http://image.tomatojoy.cn/6847506204006681a5d5fa0cd91ce408";
-    ADManager.shareContent = "快把锅甩给队友！";
-    var TaT;
-    (function (TaT) {
-        TaT[TaT["BtnShow"] = 0] = "BtnShow";
-        TaT[TaT["BtnClick"] = 1] = "BtnClick";
-        TaT[TaT["PageShow"] = 2] = "PageShow";
-        TaT[TaT["PageEnter"] = 3] = "PageEnter";
-        TaT[TaT["PageLeave"] = 4] = "PageLeave";
-        TaT[TaT["LevelStart"] = 5] = "LevelStart";
-        TaT[TaT["LevelFinish"] = 6] = "LevelFinish";
-        TaT[TaT["LevelFail"] = 7] = "LevelFail";
-    })(TaT || (TaT = {}));
-
     var lwg;
     (function (lwg) {
         let Global;
@@ -161,6 +25,12 @@
             Global._allPifu = ['01_gongzhu', '02_chiji', '03_change', '04_huiguniang', '05_tianshi', '06_xiaohongmao', '07_xiaohuangya', '08_zhenzi', '09_aisha'];
             Global._buyNum = 1;
             Global._watchAdsNum = 0;
+            Global._huangpihaozi = false;
+            Global._zibiyazi = false;
+            Global._kejigongzhu = false;
+            Global._haimiangongzhu = false;
+            Global._paintedPifu = [];
+            Global._pickPaintedNum = 0;
             Global.pingceV = true;
             function _vibratingScreen() {
             }
@@ -255,6 +125,13 @@
                 }));
             }
             Global._createGoldNum = _createGoldNum;
+            function _addGold(number) {
+                lwg.Global._goldNum += number;
+                let Num = lwg.Global.GoldNumNode.getChildByName('Num');
+                Num.value = lwg.Global._goldNum.toString();
+                lwg.LocalStorage.addData();
+            }
+            Global._addGold = _addGold;
             function _createExecutionNum(parent) {
                 let sp;
                 Laya.loader.load('prefab/ExecutionNum.json', Laya.Handler.create(this, function (prefab) {
@@ -271,6 +148,16 @@
                 }));
             }
             Global._createExecutionNum = _createExecutionNum;
+            function _addExecution(number) {
+                lwg.Global._execution += number;
+                if (lwg.Global._execution > 15) {
+                    lwg.Global._execution = 15;
+                }
+                let num = lwg.Global.ExecutionNumNode.getChildByName('Num');
+                num.value = lwg.Global._execution.toString();
+                lwg.LocalStorage.addData();
+            }
+            Global._addExecution = _addExecution;
             function _createBtnPause(parent) {
                 let sp;
                 Laya.loader.load('prefab/BtnPause.json', Laya.Handler.create(this, function (prefab) {
@@ -344,12 +231,28 @@
                     _prefab.json = prefab;
                     sp = Laya.Pool.getItemByCreateFun('P201', _prefab.create, _prefab);
                     parent.addChild(sp);
-                    sp.pos(90, 225);
+                    sp.pos(80, 290);
                     sp.zOrder = 65;
                     Global.P201_01Node = sp;
                 }));
             }
             Global._createP201_01 = _createP201_01;
+            function _createStimulateDec(parent) {
+                let sp;
+                Laya.loader.load('prefab/StimulateDec.json', Laya.Handler.create(this, function (prefab) {
+                    let _prefab = new Laya.Prefab();
+                    _prefab.json = prefab;
+                    sp = Laya.Pool.getItemByCreateFun('StimulateDec', _prefab.create, _prefab);
+                    let dec = sp.getChildByName('Dec');
+                    let num = lwg.Admin.openCustomName.substring(lwg.Admin.openCustomName.length - 3, lwg.Admin.openCustomName.length);
+                    dec.text = lwg.Global._stimulateDec[Number(num) - 1]['dec'];
+                    parent.addChild(sp);
+                    sp.pos(35, 150);
+                    sp.zOrder = 65;
+                    Global.StimulateDecNode = sp;
+                }));
+            }
+            Global._createStimulateDec = _createStimulateDec;
             function _createHint_01(type) {
                 let sp;
                 Laya.loader.load('prefab/HintPre_01.json', Laya.Handler.create(this, function (prefab) {
@@ -391,6 +294,30 @@
                 }));
             }
             Global._createHint_02 = _createHint_02;
+            function _createHint_InPut(input) {
+                let sp;
+                Laya.loader.load('prefab/HintPre_01.json', Laya.Handler.create(this, function (prefab) {
+                    let _prefab = new Laya.Prefab();
+                    _prefab.json = prefab;
+                    sp = Laya.Pool.getItemByCreateFun('prefab', _prefab.create, _prefab);
+                    Laya.stage.addChild(sp);
+                    sp.pos(Laya.stage.width / 2, Laya.stage.height / 2);
+                    let dec = sp.getChildByName('dec');
+                    dec.text = input;
+                    sp.zOrder = 100;
+                    dec.alpha = 0;
+                    Animation.scale_Alpha(sp, 0, 1, 0, 1, 1, 1, 200, 0, f => {
+                        Animation.fadeOut(dec, 0, 1, 150, 0, f => {
+                            Animation.fadeOut(dec, 1, 0, 200, 1500, f => {
+                                Animation.scale_Alpha(sp, 1, 1, 1, 1, 0, 0, 200, 0, f => {
+                                    sp.removeSelf();
+                                });
+                            });
+                        });
+                    });
+                }));
+            }
+            Global._createHint_InPut = _createHint_InPut;
             function createConsumeEx(subEx) {
                 let label = Laya.Pool.getItemByClass('label', Laya.Label);
                 label.name = 'label';
@@ -462,6 +389,11 @@
                     '_currentPifu': lwg.Global._currentPifu,
                     '_havePifu': lwg.Global._havePifu,
                     '_watchAdsNum': lwg.Global._watchAdsNum,
+                    '_huangpihaozi': lwg.Global._huangpihaozi,
+                    '_zibiyazi': lwg.Global._zibiyazi,
+                    '_kejigongzhu': lwg.Global._kejigongzhu,
+                    '_pickPaintedNum': lwg.Global._pickPaintedNum,
+                    '_haimiangongzhu': lwg.Global._haimiangongzhu
                 };
                 let data = JSON.stringify(storageData);
                 Laya.LocalStorage.setJSON('storageData', data);
@@ -491,11 +423,49 @@
                     lwg.Global._currentPifu = Enum.PifuAllName[0];
                     lwg.Global._havePifu = ['01_gongzhu'];
                     lwg.Global._watchAdsNum = 0;
+                    lwg.Global._huangpihaozi = false;
+                    lwg.Global._zibiyazi = false;
+                    lwg.Global._kejigongzhu = false;
+                    lwg.Global._haimiangongzhu = false;
+                    lwg.Global._pickPaintedNum = 0;
                     return null;
                 }
             }
             LocalStorage.getData = getData;
         })(LocalStorage = lwg.LocalStorage || (lwg.LocalStorage = {}));
+        let EventAdmin;
+        (function (EventAdmin) {
+            let EventType;
+            (function (EventType) {
+                EventType["btnOnClick"] = "btnOnClick";
+                EventType["aniComplete"] = "aniComplete";
+            })(EventType = EventAdmin.EventType || (EventAdmin.EventType = {}));
+            class EventClass {
+                constructor() {
+                    this.dispatcher = new Laya.EventDispatcher();
+                }
+                static reg(type, caller, listener) {
+                    if (!caller) {
+                        console.error("caller must exist!");
+                    }
+                    EventClass.Self.dispatcher.on(type.toString(), caller, listener);
+                }
+                static notify(type, args) {
+                    EventClass.Self.dispatcher.event(type.toString(), args);
+                }
+                static off(type, caller, listener) {
+                    EventClass.Self.dispatcher.off(type.toString(), caller, listener);
+                }
+                static offAll(type) {
+                    EventClass.Self.dispatcher.offAll(type.toString());
+                }
+                static offCaller(caller) {
+                    EventClass.Self.dispatcher.offAllCaller(caller);
+                }
+            }
+            EventClass.Self = new EventClass();
+            EventAdmin.EventClass = EventClass;
+        })(EventAdmin = lwg.EventAdmin || (lwg.EventAdmin = {}));
         let Admin;
         (function (Admin) {
             Admin._sceneControl = {};
@@ -517,6 +487,9 @@
                 SceneName["UIPifuTry"] = "UIPifuTry";
                 SceneName["UIRedeem"] = "UIRedeem";
                 SceneName["UIAnchorXD"] = "UIAnchorXD";
+                SceneName["UITurntable"] = "UITurntable";
+                SceneName["UICaiDanQiang"] = "UICaiDanQiang";
+                SceneName["UICaidanPifu"] = "UICaidanPifu";
             })(SceneName = Admin.SceneName || (Admin.SceneName = {}));
             let GameState;
             (function (GameState) {
@@ -543,8 +516,8 @@
                         if (openName.substring(0, 6) === 'UIMain') {
                             background.width = null;
                             background.height = null;
-                            background.x = 360,
-                                background.y = 640;
+                            background.x = 360;
+                            background.y = 640;
                         }
                         else {
                             background.width = Laya.stage.width;
@@ -662,131 +635,42 @@
                 Admin._sceneControl[Admin.openCustomName].close();
             }
             Admin._closeCustomScene = _closeCustomScene;
-            function printPoint(type, name) {
-                switch (name) {
-                    case SceneName.UILoding:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'UIPreload');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'UIPreload');
-                        }
-                        break;
-                    case SceneName.UIStart:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'mianpage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'mianpage');
-                        }
-                        break;
-                    case SceneName.UIVictory:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'successpage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'successpage');
-                        }
-                        break;
-                    case SceneName.UIDefeated:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'failpage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'failpage');
-                        }
-                        break;
-                    case SceneName.UIExecutionHint:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'noticketpage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'noticketpage');
-                        }
-                        break;
-                    case SceneName.UIPassHint:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'freegiftpage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'freegiftpage');
-                        }
-                        break;
-                    case SceneName.UIPuase:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'pausepage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'pausepage');
-                        }
-                        break;
-                    case SceneName.UIShare:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'sharepage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'sharepage');
-                        }
-                        break;
-                    case SceneName.UIPifu:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'skinpage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'skinpage');
-                        }
-                        break;
-                    case SceneName.UIPifuTry:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'skintrypage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'skintrypage');
-                        }
-                        break;
-                    case SceneName.UIXDpifu:
-                        if (type === 'on') {
-                            ADManager.TAPoint(TaT.PageEnter, 'limitskinpage');
-                        }
-                        else if (type === 'dis') {
-                            ADManager.TAPoint(TaT.PageLeave, 'limitskinpage');
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-            Admin.printPoint = printPoint;
             class Scene extends Laya.Script {
                 constructor() {
                     super();
+                    this.aniTime = 0;
+                    this.aniDelayde = 0;
                 }
-                onEnable() {
+                onAwake() {
                     this.self = this.owner;
                     this.calssName = this['__proto__']['constructor'].name;
                     this.gameState(this.calssName);
-                    this.self[this.calssName] = this;
                     this.selfVars();
-                    this.lwgInit();
-                    this.btnOnClick();
+                    this.variateInit();
                     this.adaptive();
-                    this.openAni();
+                }
+                onEnable() {
+                    this.self[this.calssName] = this;
+                    this.lwgInit();
+                    this.btnAndOpenAni();
                 }
                 selfVars() {
+                }
+                variateInit() {
                 }
                 gameState(calssName) {
                     switch (calssName) {
                         case SceneName.UIStart:
-                            Admin._gameState = lwg.Enum.GameState.GameStart;
+                            Admin._gameState = GameState.GameStart;
                             break;
                         case SceneName.UIMain:
-                            Admin._gameState = lwg.Enum.GameState.Play;
+                            Admin._gameState = GameState.Play;
                             break;
                         case SceneName.UIDefeated:
-                            Admin._gameState = lwg.Enum.GameState.Defeated;
+                            Admin._gameState = GameState.Defeated;
                             break;
                         case SceneName.UIVictory:
-                            Admin._gameState = lwg.Enum.GameState.Victory;
+                            Admin._gameState = GameState.Victory;
                             break;
                         default:
                             break;
@@ -794,21 +678,35 @@
                 }
                 lwgInit() {
                 }
+                btnAndOpenAni() {
+                    let time = this.openAni();
+                    if (time) {
+                        Laya.timer.once(time, this, f => {
+                            this.btnOnClick();
+                        });
+                    }
+                    else {
+                        this.btnOnClick();
+                    }
+                }
                 btnOnClick() {
+                }
+                openAni() {
+                    return this.aniTime;
                 }
                 adaptive() {
                 }
-                openAni() {
-                }
                 vanishAni() {
+                    return 0;
                 }
                 onUpdate() {
                     this.lwgOnUpdate();
                 }
-                lwgOnUpdate() { }
-                ;
+                lwgOnUpdate() {
+                }
                 onDisable() {
                     this.lwgDisable();
+                    Laya.timer.clearAll(this);
                 }
                 lwgDisable() {
                 }
@@ -817,6 +715,10 @@
             class Person extends Laya.Script {
                 constructor() {
                     super();
+                }
+                onAwake() {
+                }
+                lwgOnAwake() {
                 }
                 onEnable() {
                     this.self = this.owner;
@@ -845,6 +747,7 @@
                     this.btnOnClick();
                 }
                 lwgInit() {
+                    console.log('父类的初始化！');
                 }
                 btnOnClick() {
                 }
@@ -855,6 +758,7 @@
                 }
                 onDisable() {
                     this.lwgDisable();
+                    Laya.Tween.clearTween(this);
                 }
                 lwgDisable() {
                 }
@@ -892,6 +796,9 @@
                 SkinUrl[SkinUrl["Effects/icon_biggold.png"] = 24] = "Effects/icon_biggold.png";
             })(SkinUrl = Effects.SkinUrl || (Effects.SkinUrl = {}));
             class EffectsBase extends Laya.Script {
+                onAwake() {
+                    this.initProperty();
+                }
                 onEnable() {
                     this.self = this.owner;
                     this.selfScene = this.self.scene;
@@ -901,7 +808,6 @@
                     this.self.pivotY = this.self.height / 2;
                     this.timer = 0;
                     this.lwgInit();
-                    this.initProperty();
                     this.propertyAssign();
                 }
                 lwgInit() {
@@ -933,19 +839,27 @@
                 }
             }
             Effects.EffectsBase = EffectsBase;
-            function createCommonExplosion(parent, quantity, x, y) {
+            function createCommonExplosion(parent, quantity, x, y, style, speed, continueTime) {
                 for (let index = 0; index < quantity; index++) {
                     let ele = Laya.Pool.getItemByClass('ele', Laya.Image);
                     ele.name = 'ele';
-                    let num = Math.floor(Math.random() * 12);
-                    ele.alpha = 1;
+                    let num;
+                    if (style === 'star') {
+                        num = 12 + Math.floor(Math.random() * 12);
+                    }
+                    else if (style === 'dot') {
+                        num = Math.floor(Math.random() * 12);
+                    }
                     ele.skin = SkinUrl[num];
+                    ele.alpha = 1;
                     parent.addChild(ele);
                     ele.pos(x, y);
                     let scirpt = ele.getComponent(commonExplosion);
                     if (!scirpt) {
-                        ele.addComponent(commonExplosion);
+                        scirpt = ele.addComponent(commonExplosion);
                     }
+                    scirpt.startSpeed = 5 * Math.random() + speed;
+                    scirpt.continueTime = 8 * Math.random() + continueTime;
                 }
             }
             Effects.createCommonExplosion = createCommonExplosion;
@@ -955,14 +869,14 @@
                     this.startSpeed = 5 * Math.random() + 8;
                     this.startScale = 0.4 + Math.random() * 0.6;
                     this.accelerated = 0.1;
-                    this.vanishTime = 8 + Math.random() * 10;
+                    this.continueTime = 8 + Math.random() * 10;
                 }
                 moveRules() {
                     this.timer++;
-                    if (this.timer >= this.vanishTime / 2) {
-                        this.self.alpha -= 0.15;
+                    if (this.timer >= this.continueTime / 2) {
+                        this.self.alpha -= 0.1;
                     }
-                    if (this.timer >= this.vanishTime) {
+                    if (this.timer >= this.continueTime) {
                         this.self.removeSelf();
                     }
                     else {
@@ -1042,14 +956,14 @@
                     this.startSpeed = 5 * Math.random() + 5;
                     this.startScale = 0.4 + Math.random() * 0.6;
                     this.accelerated = 0.1;
-                    this.vanishTime = 200 + Math.random() * 10;
+                    this.continueTime = 200 + Math.random() * 10;
                 }
                 moveRules() {
                     this.timer++;
-                    if (this.timer >= this.vanishTime * 3 / 5) {
+                    if (this.timer >= this.continueTime * 3 / 5) {
                         this.self.alpha -= 0.1;
                     }
-                    if (this.timer >= this.vanishTime) {
+                    if (this.timer >= this.continueTime) {
                         this.self.removeSelf();
                     }
                     else {
@@ -1098,15 +1012,15 @@
                     this.startSpeed = 10 * Math.random() + 3;
                     this.startScale = 0.4 + Math.random() * 0.6;
                     this.accelerated = 0.1;
-                    this.vanishTime = 300 + Math.random() * 50;
+                    this.continueTime = 300 + Math.random() * 50;
                     this.randomRotate = 1 + Math.random() * 20;
                 }
                 moveRules() {
                     this.timer++;
-                    if (this.timer >= this.vanishTime * 3 / 5) {
+                    if (this.timer >= this.continueTime * 3 / 5) {
                         this.self.alpha -= 0.1;
                     }
-                    if (this.timer >= this.vanishTime) {
+                    if (this.timer >= this.continueTime) {
                         this.self.removeSelf();
                     }
                     else {
@@ -1125,6 +1039,28 @@
         })(Effects = lwg.Effects || (lwg.Effects = {}));
         let Sk;
         (function (Sk) {
+            let PifuMatching;
+            (function (PifuMatching) {
+                PifuMatching["gongzhu"] = "01_gongzhu";
+                PifuMatching["chiji"] = "02_chiji";
+                PifuMatching["change"] = "03_change";
+                PifuMatching["huiguniang"] = "04_huiguniang";
+                PifuMatching["tianshi"] = "05_tianshi";
+                PifuMatching["xiaohongmao"] = "06_xiaohongmao";
+                PifuMatching["xiaohuangya"] = "07_xiaohuangya";
+                PifuMatching["zhenzi"] = "08_zhenzi";
+                PifuMatching["aisha"] = "09_aisha";
+            })(PifuMatching = Sk.PifuMatching || (Sk.PifuMatching = {}));
+            let PaintedPifu;
+            (function (PaintedPifu) {
+                PaintedPifu["daji"] = "P_001_daji";
+                PaintedPifu["shizi"] = "P_002_shizi";
+                PaintedPifu["pikaqiu"] = "P_003_pikaqiu";
+                PaintedPifu["cangshu"] = "P_004_cangshu";
+                PaintedPifu["haimianbaobao"] = "P_005_haimianbaobao";
+                PaintedPifu["keji"] = "P_006_keji";
+                PaintedPifu["kedaya"] = "P_007_kedaya";
+            })(PaintedPifu = Sk.PaintedPifu || (Sk.PaintedPifu = {}));
             Sk.gongzhuTem = new Laya.Templet();
             Sk.aishaTem = new Laya.Templet();
             Sk.changeTem = new Laya.Templet();
@@ -1134,6 +1070,13 @@
             Sk.xiaohongmaoTem = new Laya.Templet();
             Sk.xiaohuangyaTem = new Laya.Templet();
             Sk.zhenziTem = new Laya.Templet();
+            Sk.kedayaTem = new Laya.Templet();
+            Sk.cangshuTem = new Laya.Templet();
+            Sk.dajiTem = new Laya.Templet();
+            Sk.haimianbaobaoTem = new Laya.Templet();
+            Sk.pikaqiuTem = new Laya.Templet();
+            Sk.shiziTem = new Laya.Templet();
+            Sk.kejiTem = new Laya.Templet();
             Sk.wangziTem = new Laya.Templet();
             Sk.gouTem = new Laya.Templet();
             Sk.qingdi_01Tem = new Laya.Templet();
@@ -1150,6 +1093,13 @@
                 createXiaohongmaoTem();
                 createXiaohuangyaTem();
                 createZhenziTem();
+                createCangshuTem();
+                createPikaqiuTem();
+                createDajiTem();
+                createHaimianbaobaoTem();
+                createShiziTem();
+                createKejiTem();
+                createKedayaTem();
                 createWangziTem();
                 createGouTem();
                 createQingdi_01Tem();
@@ -1212,6 +1162,48 @@
                 Sk.zhenziTem.loadAni("SK/zhenzi.sk");
             }
             Sk.createZhenziTem = createZhenziTem;
+            function createCangshuTem() {
+                Sk.cangshuTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.cangshuTem.on(Laya.Event.ERROR, this, onError);
+                Sk.cangshuTem.loadAni("SK/cangshu.sk");
+            }
+            Sk.createCangshuTem = createCangshuTem;
+            function createDajiTem() {
+                Sk.dajiTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.dajiTem.on(Laya.Event.ERROR, this, onError);
+                Sk.dajiTem.loadAni("SK/daji.sk");
+            }
+            Sk.createDajiTem = createDajiTem;
+            function createHaimianbaobaoTem() {
+                Sk.haimianbaobaoTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.haimianbaobaoTem.on(Laya.Event.ERROR, this, onError);
+                Sk.haimianbaobaoTem.loadAni("SK/haimianbaobao.sk");
+            }
+            Sk.createHaimianbaobaoTem = createHaimianbaobaoTem;
+            function createPikaqiuTem() {
+                Sk.pikaqiuTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.pikaqiuTem.on(Laya.Event.ERROR, this, onError);
+                Sk.pikaqiuTem.loadAni("SK/pikaqiu.sk");
+            }
+            Sk.createPikaqiuTem = createPikaqiuTem;
+            function createShiziTem() {
+                Sk.shiziTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.shiziTem.on(Laya.Event.ERROR, this, onError);
+                Sk.shiziTem.loadAni("SK/shizi.sk");
+            }
+            Sk.createShiziTem = createShiziTem;
+            function createKejiTem() {
+                Sk.kejiTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.kejiTem.on(Laya.Event.ERROR, this, onError);
+                Sk.kejiTem.loadAni("SK/keji.sk");
+            }
+            Sk.createKejiTem = createKejiTem;
+            function createKedayaTem() {
+                Sk.kedayaTem.on(Laya.Event.COMPLETE, this, onCompelet);
+                Sk.kedayaTem.on(Laya.Event.ERROR, this, onError);
+                Sk.kedayaTem.loadAni("SK/kedaya.sk");
+            }
+            Sk.createKedayaTem = createKedayaTem;
             function createWangziTem() {
                 Sk.wangziTem.on(Laya.Event.COMPLETE, this, onCompelet);
                 Sk.wangziTem.on(Laya.Event.ERROR, this, onError);
@@ -1278,6 +1270,12 @@
                 HintDec[HintDec["\u9650\u5B9A\u76AE\u80A4\u5DF2\u7ECF\u83B7\u5F97\uFF0C\u8BF7\u524D\u5F80\u5546\u5E97\u67E5\u770B\u3002"] = 14] = "\u9650\u5B9A\u76AE\u80A4\u5DF2\u7ECF\u83B7\u5F97\uFF0C\u8BF7\u524D\u5F80\u5546\u5E97\u67E5\u770B\u3002";
                 HintDec[HintDec["\u5206\u4EAB\u5931\u8D25\uFF01"] = 15] = "\u5206\u4EAB\u5931\u8D25\uFF01";
                 HintDec[HintDec["\u5151\u6362\u7801\u9519\u8BEF\uFF01"] = 16] = "\u5151\u6362\u7801\u9519\u8BEF\uFF01";
+                HintDec[HintDec["\u83B7\u5F97\u67EF\u57FA\u516C\u4E3B\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01"] = 17] = "\u83B7\u5F97\u67EF\u57FA\u516C\u4E3B\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01";
+                HintDec[HintDec["\u83B7\u5F97\u9EC4\u76AE\u8017\u5B50\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01"] = 18] = "\u83B7\u5F97\u9EC4\u76AE\u8017\u5B50\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01";
+                HintDec[HintDec["\u83B7\u5F97\u8D5B\u7259\u4EBA\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01"] = 19] = "\u83B7\u5F97\u8D5B\u7259\u4EBA\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01";
+                HintDec[HintDec["\u83B7\u5F97\u6D77\u7EF5\u516C\u4E3B\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01"] = 20] = "\u83B7\u5F97\u6D77\u7EF5\u516C\u4E3B\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01";
+                HintDec[HintDec["\u83B7\u5F97\u4ED3\u9F20\u516C\u4E3B\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01"] = 21] = "\u83B7\u5F97\u4ED3\u9F20\u516C\u4E3B\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01";
+                HintDec[HintDec["\u83B7\u5F97\u81EA\u95ED\u9E2D\u5B50\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01"] = 22] = "\u83B7\u5F97\u81EA\u95ED\u9E2D\u5B50\u76AE\u80A4\uFF0C\u524D\u5F80\u5F69\u86CB\u5899\u67E5\u770B\uFF01";
             })(HintDec = Enum.HintDec || (Enum.HintDec = {}));
             let HintType;
             (function (HintType) {
@@ -1298,6 +1296,12 @@
                 HintType[HintType["getXD"] = 14] = "getXD";
                 HintType[HintType["sharefailNoAward"] = 15] = "sharefailNoAward";
                 HintType[HintType["inputerr"] = 16] = "inputerr";
+                HintType[HintType["kejigongzhu"] = 17] = "kejigongzhu";
+                HintType[HintType["huangpihaozi"] = 18] = "huangpihaozi";
+                HintType[HintType["saiyaren"] = 19] = "saiyaren";
+                HintType[HintType["haimiangongzhu"] = 20] = "haimiangongzhu";
+                HintType[HintType["cangshugongzhu"] = 21] = "cangshugongzhu";
+                HintType[HintType["zibiyazi"] = 22] = "zibiyazi";
             })(HintType = Enum.HintType || (Enum.HintType = {}));
             let PifuOrder;
             (function (PifuOrder) {
@@ -1323,18 +1327,6 @@
                 PifuAllName[PifuAllName["08_zhenzi"] = 7] = "08_zhenzi";
                 PifuAllName[PifuAllName["09_aisha"] = 8] = "09_aisha";
             })(PifuAllName = Enum.PifuAllName || (Enum.PifuAllName = {}));
-            let PifuMatching;
-            (function (PifuMatching) {
-                PifuMatching["gongzhu"] = "01_gongzhu";
-                PifuMatching["chiji"] = "02_chiji";
-                PifuMatching["change"] = "03_change";
-                PifuMatching["huiguniang"] = "04_huiguniang";
-                PifuMatching["tianshi"] = "05_tianshi";
-                PifuMatching["xiaohongmao"] = "06_xiaohongmao";
-                PifuMatching["xiaohuangya"] = "07_xiaohuangya";
-                PifuMatching["zhenzi"] = "08_zhenzi";
-                PifuMatching["aisha"] = "09_aisha";
-            })(PifuMatching = Enum.PifuMatching || (Enum.PifuMatching = {}));
             let PifuSkin;
             (function (PifuSkin) {
                 PifuSkin[PifuSkin["UI_new/Pifu/pifu_01_gongzhu.png"] = 0] = "UI_new/Pifu/pifu_01_gongzhu.png";
@@ -1371,6 +1363,16 @@
                 PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_changfa.png"] = 7] = "UI_new/Pifu/word_changfa.png";
                 PifuNameSkin[PifuNameSkin["UI_new/Pifu/word_bingjing.png"] = 8] = "UI_new/Pifu/word_bingjing.png";
             })(PifuNameSkin = Enum.PifuNameSkin || (Enum.PifuNameSkin = {}));
+            let CaidanPifuName;
+            (function (CaidanPifuName) {
+                CaidanPifuName["huangpihaozi"] = "01_huangpihaozi";
+                CaidanPifuName["zibiyazi"] = "02_zibiyazi";
+                CaidanPifuName["cangshugongzhu"] = "03_cangshugongzhu";
+                CaidanPifuName["kejigongzhu"] = "04_kejigongzhu";
+                CaidanPifuName["saiyaren"] = "05_saiyaren";
+                CaidanPifuName["haimiangongzhu"] = "06_haimiangongzhu";
+                CaidanPifuName["daji"] = "07_daji";
+            })(CaidanPifuName = Enum.CaidanPifuName || (Enum.CaidanPifuName = {}));
             let voiceUrl;
             (function (voiceUrl) {
                 voiceUrl["btn"] = "voice/btn.wav";
@@ -1390,28 +1392,6 @@
                 PifuAllName_Ch[PifuAllName_Ch["\u9646\u80A5"] = 7] = "\u9646\u80A5";
                 PifuAllName_Ch[PifuAllName_Ch["\u82F1\u96C4"] = 8] = "\u82F1\u96C4";
             })(PifuAllName_Ch = Enum.PifuAllName_Ch || (Enum.PifuAllName_Ch = {}));
-            let TaskType;
-            (function (TaskType) {
-                TaskType["topUp"] = "topUp";
-                TaskType["move"] = "move";
-                TaskType["continue"] = "continue";
-                TaskType["gold"] = "gold";
-            })(TaskType = Enum.TaskType || (Enum.TaskType = {}));
-            let PersonDir;
-            (function (PersonDir) {
-                PersonDir["up"] = "up";
-                PersonDir["down"] = "down";
-                PersonDir["left"] = "left";
-                PersonDir["right"] = "right";
-            })(PersonDir = Enum.PersonDir || (Enum.PersonDir = {}));
-            let GameState;
-            (function (GameState) {
-                GameState["GameStart"] = "GameStart";
-                GameState["Play"] = "Play";
-                GameState["Pause"] = "pause";
-                GameState["Victory"] = "victory";
-                GameState["Defeated"] = "defeated";
-            })(GameState = Enum.GameState || (Enum.GameState = {}));
             let MoveState;
             (function (MoveState) {
                 MoveState["onFloor"] = "onFloor";
@@ -1529,30 +1509,6 @@
                 houseAni["box_01_static"] = "box_01_static";
                 houseAni["box_02_static"] = "box_02_static";
             })(houseAni = Enum.houseAni || (Enum.houseAni = {}));
-            let bulletType;
-            (function (bulletType) {
-                bulletType["yellow"] = "yellow";
-                bulletType["bule"] = "bule";
-                bulletType["green"] = "green";
-            })(bulletType = Enum.bulletType || (Enum.bulletType = {}));
-            let bulletSkin;
-            (function (bulletSkin) {
-                bulletSkin["yellow"] = "Frame/UI/ui_circle_c_008.png";
-                bulletSkin["bule"] = "Frame/UI/ui_circle_006.png";
-                bulletSkin["green"] = "Frame/UI/ui_circle_001.png";
-            })(bulletSkin = Enum.bulletSkin || (Enum.bulletSkin = {}));
-            let enemyType;
-            (function (enemyType) {
-                enemyType["yellow"] = "yellow";
-                enemyType["bule"] = "bule";
-                enemyType["green"] = "green";
-            })(enemyType = Enum.enemyType || (Enum.enemyType = {}));
-            let enemySkin;
-            (function (enemySkin) {
-                enemySkin["yellow"] = "Frame/UI/ui_square_011.png";
-                enemySkin["bule"] = "Frame/UI/ui_square_002.png";
-                enemySkin["green"] = "Frame/UI/ui_square_009.png";
-            })(enemySkin = Enum.enemySkin || (Enum.enemySkin = {}));
         })(Enum = lwg.Enum || (lwg.Enum = {}));
         let Click;
         (function (Click) {
@@ -1609,7 +1565,6 @@
                     default:
                         break;
                 }
-                btnPrintPoint('on', target);
                 target.off(Laya.Event.MOUSE_DOWN, caller, down === null ? btnEffect.down : down);
                 target.off(Laya.Event.MOUSE_MOVE, caller, move === null ? btnEffect.move : move);
                 target.off(Laya.Event.MOUSE_UP, caller, up === null ? btnEffect.up : up);
@@ -1617,37 +1572,6 @@
             }
             Click.off = off;
         })(Click = lwg.Click || (lwg.Click = {}));
-        function btnPrintPoint(type, target) {
-            switch (target) {
-                case lwg.Global.BtnPauseNode:
-                    if (type === 'on') {
-                        ADManager.TAPoint(TaT.BtnShow, 'pausebt_play');
-                    }
-                    else if (type === 'dis') {
-                        ADManager.TAPoint(TaT.BtnClick, 'pausebt_play');
-                    }
-                    break;
-                case lwg.Global.BtnHintNode:
-                    if (type === 'on') {
-                        ADManager.TAPoint(TaT.BtnShow, 'ADrwardbt_play');
-                    }
-                    else if (type === 'dis') {
-                        ADManager.TAPoint(TaT.BtnClick, 'ADrwardbt_play');
-                    }
-                    break;
-                case lwg.Global.BtnAgainNode:
-                    if (type === 'on') {
-                        ADManager.TAPoint(TaT.BtnShow, 'returnbt_play');
-                    }
-                    else if (type === 'dis') {
-                        ADManager.TAPoint(TaT.BtnClick, 'returnbt_play');
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        lwg.btnPrintPoint = btnPrintPoint;
         class Btn_NoEffect {
             constructor() {
             }
@@ -1672,11 +1596,9 @@
                 }
             }
             move(event) {
-                event.currentTarget.scale(1, 1);
             }
             up(event) {
                 event.currentTarget.scale(1, 1);
-                btnPrintPoint('on', event.currentTarget.name);
             }
             out(event) {
                 event.currentTarget.scale(1, 1);
@@ -1860,8 +1782,9 @@
                 }), 0);
             }
             Animation.rotate_Scale = rotate_Scale;
-            function drop_Simple(node, targetY, rotation, time, delayed, func) {
-                Laya.Tween.to(node, { y: targetY, rotation: rotation }, time, Laya.Ease.expoIn, Laya.Handler.create(this, function () {
+            function drop_Simple(node, fY, tY, rotation, time, delayed, func) {
+                node.y = fY;
+                Laya.Tween.to(node, { y: tY, rotation: rotation }, time, Laya.Ease.circOut, Laya.Handler.create(this, function () {
                     if (func !== null) {
                         func();
                     }
@@ -1871,7 +1794,7 @@
             function drop_KickBack(target, fAlpha, firstY, targetY, extendY, time1, delayed, func) {
                 target.alpha = fAlpha;
                 target.y = firstY;
-                Laya.Tween.to(target, { alpha: 1, y: targetY + extendY }, time1, Laya.Ease.expoIn, Laya.Handler.create(this, function () {
+                Laya.Tween.to(target, { alpha: 1, y: targetY + extendY }, time1, null, Laya.Handler.create(this, function () {
                     Laya.Tween.to(target, { y: targetY - extendY / 2 }, time1 / 2, null, Laya.Handler.create(this, function () {
                         Laya.Tween.to(target, { y: targetY }, time1 / 4, null, Laya.Handler.create(this, function () {
                             if (func !== null) {
@@ -2092,7 +2015,7 @@
                 }), delayed);
             }
             Animation.move_Deform_Y = move_Deform_Y;
-            function blink_FadeOut(target, minAlpha, maXalpha, time, delayed, func) {
+            function blink_FadeOut_v(target, minAlpha, maXalpha, time, delayed, func) {
                 target.alpha = minAlpha;
                 Laya.Tween.to(target, { alpha: maXalpha }, time, null, Laya.Handler.create(this, function () {
                     Laya.Tween.to(target, { alpha: minAlpha }, time, null, Laya.Handler.create(this, function () {
@@ -2102,7 +2025,32 @@
                     }), 0);
                 }), delayed);
             }
+            Animation.blink_FadeOut_v = blink_FadeOut_v;
+            function blink_FadeOut(target, minAlpha, maXalpha, time, delayed, func) {
+                Laya.Tween.to(target, { alpha: minAlpha }, time, null, Laya.Handler.create(this, function () {
+                    Laya.Tween.to(target, { alpha: maXalpha }, time, null, Laya.Handler.create(this, function () {
+                        if (func !== null) {
+                            func();
+                        }
+                    }), 0);
+                }), delayed);
+            }
             Animation.blink_FadeOut = blink_FadeOut;
+            function shookHead_Simple(target, rotate, time, delayed, func) {
+                let firstR = target.rotation;
+                Laya.Tween.to(target, { rotation: firstR + rotate }, time, null, Laya.Handler.create(this, function () {
+                    Laya.Tween.to(target, { rotation: firstR - rotate * 2 }, time, null, Laya.Handler.create(this, function () {
+                        Laya.Tween.to(target, { rotation: firstR + rotate }, time, null, Laya.Handler.create(this, function () {
+                            Laya.Tween.to(target, { rotation: firstR }, time, null, Laya.Handler.create(this, function () {
+                                if (func !== null) {
+                                    func();
+                                }
+                            }), 0);
+                        }), 0);
+                    }), 0);
+                }), delayed);
+            }
+            Animation.shookHead_Simple = shookHead_Simple;
             function HintAni_01(target, upNum, time1, stopTime, downNum, time2, func) {
                 target.alpha = 0;
                 Laya.Tween.to(target, { alpha: 1, y: target.y - upNum }, time1, null, Laya.Handler.create(this, function () {
@@ -2168,6 +2116,56 @@
         })(PalyAudio = lwg.PalyAudio || (lwg.PalyAudio = {}));
         let Tools;
         (function (Tools) {
+            function toHexString(r, g, b) {
+                return ("00000" + (r << 16 | g << 8 | b).toString(16)).slice(-6);
+            }
+            Tools.toHexString = toHexString;
+            function twoObjectsLen_3D(obj1, obj2) {
+                let obj1V3 = obj1.transform.position;
+                let obj2V3 = obj2.transform.position;
+                let p = new Laya.Vector3();
+                Laya.Vector3.subtract(obj1V3, obj2V3, p);
+                let lenp = Laya.Vector3.scalarLength(p);
+                return lenp;
+            }
+            Tools.twoObjectsLen_3D = twoObjectsLen_3D;
+            function twoSubV3_3D(V3_01, V3_02) {
+                let p = new Laya.Vector3();
+                Laya.Vector3.subtract(V3_01, V3_02, p);
+                return p;
+            }
+            Tools.twoSubV3_3D = twoSubV3_3D;
+            function reverseVector(type, Vecoter1, Vecoter2, normalizing) {
+                let p;
+                if (type === '2d') {
+                    p = new Laya.Point(Vecoter1.x - Vecoter2.x, Vecoter1.y - Vecoter2.y);
+                    if (normalizing) {
+                        p.normalize();
+                    }
+                    return p;
+                }
+                else if (type === '3d') {
+                    p = new Laya.Vector3(Vecoter1.x - Vecoter2.x, Vecoter1.y - Vecoter2.y, Vecoter1.z - Vecoter2.z);
+                    if (normalizing) {
+                        let returnP = new Laya.Vector3();
+                        Laya.Vector3.normalize(p, returnP);
+                        return returnP;
+                    }
+                    else {
+                        return p;
+                    }
+                }
+            }
+            Tools.reverseVector = reverseVector;
+            function vectorAngle(x, y) {
+                let radian = Math.atan2(x, y);
+                let angle = 90 - radian * (180 / Math.PI);
+                if (angle <= 0) {
+                    angle = 270 + (90 + angle);
+                }
+                return angle;
+            }
+            Tools.vectorAngle = vectorAngle;
             function drawPieMask(parent, startAngle, endAngle) {
                 parent.cacheAs = "bitmap";
                 let drawPieSpt = new Laya.Sprite();
@@ -2341,25 +2339,74 @@
             Tools.converteNum = converteNum;
         })(Tools = lwg.Tools || (lwg.Tools = {}));
     })(lwg || (lwg = {}));
+    let Admin = lwg.Admin;
+    let Click = lwg.Click;
+    let Global = lwg.Global;
+    let Animation = lwg.Animation;
+    let EventAdmin = lwg.EventAdmin;
+    let Tools = lwg.Tools;
+    let Effects = lwg.Effects;
+
+    var GameControl;
+    (function (GameControl) {
+        let GEnum;
+        (function (GEnum) {
+            let bulletType;
+            (function (bulletType) {
+                bulletType["yellow"] = "yellow";
+                bulletType["bule"] = "bule";
+                bulletType["green"] = "green";
+            })(bulletType = GEnum.bulletType || (GEnum.bulletType = {}));
+            let bulletSkin;
+            (function (bulletSkin) {
+                bulletSkin["yellow"] = "Frame/UI/ui_square_011.png";
+                bulletSkin["bule"] = "Frame/UI/ui_square_002.png";
+                bulletSkin["green"] = "Frame/UI/ui_square_009.png";
+            })(bulletSkin = GEnum.bulletSkin || (GEnum.bulletSkin = {}));
+            let BulletState;
+            (function (BulletState) {
+                BulletState["attack"] = "attack";
+                BulletState["rebound"] = "rebound";
+            })(BulletState = GEnum.BulletState || (GEnum.BulletState = {}));
+            let enemyType;
+            (function (enemyType) {
+                enemyType["yellow"] = "yellow";
+                enemyType["bule"] = "bule";
+                enemyType["green"] = "green";
+            })(enemyType = GEnum.enemyType || (GEnum.enemyType = {}));
+            let enemySkin;
+            (function (enemySkin) {
+                enemySkin["yellow"] = "Frame/UI/ui_square_011.png";
+                enemySkin["bule"] = "Frame/UI/ui_square_002.png";
+                enemySkin["green"] = "Frame/UI/ui_square_009.png";
+            })(enemySkin = GEnum.enemySkin || (GEnum.enemySkin = {}));
+        })(GEnum = GameControl.GEnum || (GameControl.GEnum = {}));
+        let G;
+        (function (G) {
+            G.bulletNum = 0;
+        })(G = GameControl.G || (GameControl.G = {}));
+    })(GameControl || (GameControl = {}));
+    let G = GameControl.G;
+    let GEnum = GameControl.GEnum;
 
     class UIMain_Enemy extends lwg.Admin.Object {
         lwgInit() {
             let num = this.self.getChildByName('Num');
-            num.text = (Math.floor(Math.random() * 10) + 1).toString();
+            num.text = (Math.floor(Math.random() * 3) + 1).toString();
             let pic = this.self.getChildByName('Pic');
             let rand = Math.floor(Math.random() * 3);
             switch (rand) {
                 case 0:
-                    pic.skin = lwg.Enum.enemySkin.yellow;
-                    this.enemyType = lwg.Enum.enemyType.yellow;
+                    pic.skin = GEnum.enemySkin.yellow;
+                    this.enemyType = GEnum.enemyType.yellow;
                     break;
                 case 1:
-                    pic.skin = lwg.Enum.enemySkin.bule;
-                    this.enemyType = lwg.Enum.enemyType.bule;
+                    pic.skin = GEnum.enemySkin.bule;
+                    this.enemyType = GEnum.enemyType.bule;
                     break;
                 case 2:
-                    pic.skin = lwg.Enum.enemySkin.green;
-                    this.enemyType = lwg.Enum.enemyType.green;
+                    pic.skin = GEnum.enemySkin.green;
+                    this.enemyType = GEnum.enemyType.green;
                     break;
                 default:
                     break;
@@ -2396,37 +2443,51 @@
         constructor() {
             super(...arguments);
             this.targetEnemy = new Laya.Sprite();
-            this.speed = 20;
+            this.accelerated = 0;
+            this.speed = 70;
         }
         lwgInit() {
-            this.bulletState = 0;
             let enemy = this.selfScene['EnemyParent'].getChildAt(0);
             if (enemy) {
                 this.targetEnemy = enemy;
             }
+            this.bulletState = GEnum.BulletState.attack;
         }
         onTriggerEnter(other, self) {
             let otherOwner = other.owner;
             if (other.label === 'enemy') {
                 let num = otherOwner.getChildByName('Num');
-                if (Number(num.text) <= 1) {
-                    otherOwner.removeSelf();
-                }
-                else {
-                    if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
+                if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
+                    if (this.bulletState === GEnum.BulletState.attack) {
                         num.text = (Number(num.text) - 2).toString();
+                        if (Number(num.text) <= 0) {
+                            otherOwner.removeSelf();
+                        }
+                        this.self.removeSelf();
                     }
                 }
-                this.self.removeSelf();
+                else {
+                    this.bulletState = GEnum.BulletState.rebound;
+                }
             }
         }
         lwgOnUpdate() {
-            if (this.movePoint) {
-                this.self.x -= this.speed * this.movePoint.x;
-                this.self.y -= this.speed * this.movePoint.y;
-                if (this.self.y < -100) {
+            if (this.bulletState === GEnum.BulletState.attack) {
+                if (this.accelerated >= this.speed) {
+                    this.accelerated = 0;
+                    return;
+                }
+                else {
+                    this.accelerated -= 1;
+                }
+                this.self.x -= (this.speed + this.accelerated) * this.movePoint.x;
+                this.self.y -= (this.speed + this.accelerated) * this.movePoint.y;
+                if (this.self.y < -100 || this.self.y > Laya.stage.height || this.self.x > Laya.stage.width || this.self.x < 0) {
                     this.self.removeSelf();
                 }
+            }
+            else if (this.bulletState === GEnum.BulletState.rebound) {
+                this.self.rotation++;
             }
         }
     }
@@ -2466,21 +2527,22 @@
             bullet.addComponent(UIMain_Bullet);
             let pic = bullet.getChildByName('Pic');
             switch (this.launchType) {
-                case lwg.Enum.bulletType.yellow:
-                    pic.skin = lwg.Enum.bulletSkin.yellow;
-                    bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.yellow;
+                case GEnum.bulletType.yellow:
+                    pic.skin = GEnum.bulletSkin.yellow;
+                    bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.yellow;
                     break;
-                case lwg.Enum.bulletType.bule:
-                    pic.skin = lwg.Enum.bulletSkin.bule;
-                    bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.bule;
+                case GEnum.bulletType.bule:
+                    pic.skin = GEnum.bulletSkin.bule;
+                    bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.bule;
                     break;
-                case lwg.Enum.bulletType.green:
-                    pic.skin = lwg.Enum.bulletSkin.green;
-                    bullet['UIMain_Bullet'].bulletType = lwg.Enum.bulletType.green;
+                case GEnum.bulletType.green:
+                    pic.skin = GEnum.bulletSkin.green;
+                    bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.green;
                     break;
                 default:
                     break;
             }
+            G.bulletNum++;
             return bullet;
         }
         btnOnClick() {
@@ -2492,7 +2554,7 @@
             this.touchColor = e.currentTarget;
             switch (this.touchColor.name) {
                 case 'BtnYellow':
-                    this.launchType = lwg.Enum.bulletType.yellow;
+                    this.launchType = GEnum.bulletType.yellow;
                     this.self['BtnYellow'].scale(1.1, 1.1);
                     this.self['BtnBlue'].scale(1, 1);
                     this.self['BtnGreen'].scale(1, 1);
@@ -2501,7 +2563,7 @@
                     this.self['GuideLine'].alpha = 1;
                     break;
                 case 'BtnBlue':
-                    this.launchType = lwg.Enum.bulletType.bule;
+                    this.launchType = GEnum.bulletType.bule;
                     this.self['BtnYellow'].scale(1, 1);
                     this.self['BtnBlue'].scale(1.1, 1.1);
                     this.self['BtnGreen'].scale(1, 1);
@@ -2510,7 +2572,7 @@
                     this.self['GuideLine'].alpha = 1;
                     break;
                 case 'BtnGreen':
-                    this.launchType = lwg.Enum.bulletType.green;
+                    this.launchType = GEnum.bulletType.green;
                     this.self['BtnYellow'].scale(1, 1);
                     this.self['BtnBlue'].scale(1, 1);
                     this.self['BtnGreen'].scale(1.1, 1.1);
@@ -2531,6 +2593,9 @@
                 let line = this.self['GuideLine'].getChildByName('Line');
                 line.height = len;
                 let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
+                this.self['GuideLine'].rotation = lwg.Tools.vectorAngle(movePoint.x, movePoint.y) - 90;
+                this.touchColor.rotation = this.self['GuideLine'].rotation;
+                this.self[this.touchColor.name];
             }
         }
         onStageMouseUp(e) {
@@ -2544,7 +2609,7 @@
                     let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
                     movePoint.normalize();
                     bullet.getComponent(UIMain_Bullet).movePoint = movePoint;
-                    console.log(bullet.getComponent(UIMain_Bullet).movePoint);
+                    bullet.rotation = this.self['GuideLine'].rotation;
                 }
             }
             this.self['GuideLine'].alpha = 0;
@@ -2552,10 +2617,10 @@
         }
         lwgOnUpdate() {
             if (lwg.Global._gameStart) {
-                this.timer++;
                 if (this.timer % 180 === 0) {
                     this.createEnemy();
                 }
+                this.timer++;
             }
         }
     }
@@ -2637,7 +2702,7 @@
     GameConfig.sceneRoot = "";
     GameConfig.debug = false;
     GameConfig.stat = true;
-    GameConfig.physicsDebug = false;
+    GameConfig.physicsDebug = true;
     GameConfig.exportSceneToJson = true;
     GameConfig.init();
 
