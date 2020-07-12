@@ -16,9 +16,11 @@ export module GameControl {
         }
 
 
+        /**子弹状态*/
         export enum BulletState {
             attack = 'attack',
-            rebound = 'rebound'
+            rebound = 'rebound',
+            stone = 'stone'
         }
 
         /**敌人类型*/
@@ -27,12 +29,30 @@ export module GameControl {
             bule = 'bule',
             green = 'green',
         }
+
         /**敌人图片地址*/
         export enum enemySkin {
             yellow = 'Frame/UI/ui_square_011.png',
             bule = 'Frame/UI/ui_square_002.png',
             green = 'Frame/UI/ui_square_009.png',
         }
+
+        /**敌人的状态*/
+        export enum enemyState {
+            move = 'move',
+            stone = 'stone',
+            await = 'stone',
+        }
+
+        /**敌人的状态*/
+        export enum enemyMoveDir {
+            up = 'up',
+            left = 'left',
+            down = 'down',
+            right = 'right',
+            stay = 'stay'
+        }
+
     }
     /**控制游戏的全局变量*/
     export module G {

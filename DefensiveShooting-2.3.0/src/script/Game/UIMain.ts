@@ -171,7 +171,7 @@ export default class UIMain extends lwg.Admin.Scene {
     timer: number = 0;
     lwgOnUpdate(): void {
         if (lwg.Global._gameStart) {
-            if (this.timer % 180 === 0) {
+            if (this.timer % 60 === 0) {
                 this.createEnemy();
             }
             this.timer++;

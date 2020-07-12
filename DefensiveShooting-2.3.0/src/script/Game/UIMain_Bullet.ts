@@ -9,56 +9,65 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
     bulletState: string;
     /**子弹类型*/
     bulletType: string;
-
     /**移动方向的单位向量*/
     movePoint: Laya.Point;
-    lwgInit(): void {
-        let enemy = (this.selfScene['EnemyParent'] as Laya.Sprite).getChildAt(0) as Laya.Sprite;
-        if (enemy) {
-            this.targetEnemy = enemy;
-        };
 
+    lwgInit(): void {
         this.bulletState = GEnum.BulletState.attack;
     }
-    onTriggerEnter(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
-        let otherOwner = other.owner as Laya.Sprite;
-        if (other.label === 'enemy') {
-            let num = otherOwner.getChildByName('Num') as Laya.Label;
-            if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
-                if (this.bulletState === GEnum.BulletState.attack) {
-                    num.text = (Number(num.text) - 2).toString();
-                    if (Number(num.text) <= 0) {
-                        otherOwner.removeSelf();
-                    }
-                    this.self.removeSelf();
-                }
-            } else {
-                this.bulletState = GEnum.BulletState.rebound;
 
-                // 当前方向的反向向量
-                let point = new Laya.Point(otherOwner.x - this.self.x, otherOwner.y - this.self.y);
-            }
+    onTriggerEnter(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
+        switch (other.label) {
+            case 'enemy':
+                this.bulletAndEnemy(other, self);
+                break;
+            case 'stone':
+                this.bulletAndStone(other, self);
+                break;
+            default:
+                break;
         }
     }
 
+    bulletAndEnemy(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
+        let otherOwner = other.owner;
+        let num = otherOwner.getChildByName('Num') as Laya.Label;
+        if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
+            if (this.bulletState === GEnum.BulletState.attack) {
+                num.text = (Number(num.text) - 2).toString();
+                if (Number(num.text) <= 0) {
+                    otherOwner.removeSelf();
+                }
+                this.self.removeSelf();
+            }
+        } else {
+            this.bulletState = GEnum.BulletState.rebound;
+            this.accelerated = 0;
 
-    /**反弹动画*/
-    rebound(): void {
-
+            this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : - Math.random() * this.speed / 3 + 10;
+        }
     }
 
+    bulletAndStone(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
+        this.bulletState = GEnum.BulletState.rebound;
+        this.accelerated = 0;
 
+        this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : - Math.random() * this.speed / 3 + 10;
+    }
+
+    /**旋转方向*/
+    reboundRotae: number = 0;
     /**加速度*/
     accelerated: number = 0;
     /**移动速度*/
-    speed: number = 70;
+    speed: number = 80;
     lwgOnUpdate(): void {
         if (this.bulletState === GEnum.BulletState.attack) {
             if (this.accelerated >= this.speed) {
                 this.accelerated = 0;
                 return;
             } else {
-                this.accelerated -= 1;
+                this.accelerated -= 2;
             }
             this.self.x -= (this.speed + this.accelerated) * this.movePoint.x;
             this.self.y -= (this.speed + this.accelerated) * this.movePoint.y;
@@ -66,6 +75,18 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
                 this.self.removeSelf();
             }
         } else if (this.bulletState === GEnum.BulletState.rebound) {
+
+            if (this.speed / 2 + this.accelerated <= 0) {
+                this.self.alpha -= 0.05;
+                if (this.self.alpha <= 0) {
+                    this.self.removeSelf();
+                }
+            } else {
+                this.self.rotation += this.reboundRotae;
+                this.accelerated -= 2;
+                this.self.x += (this.speed / 2 + this.accelerated) * this.movePoint.x;
+                this.self.y += (this.speed / 2 + this.accelerated) * this.movePoint.y;
+            }
         }
     }
 }

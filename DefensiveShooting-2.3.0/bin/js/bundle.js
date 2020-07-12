@@ -737,6 +737,11 @@
                 constructor() {
                     super();
                 }
+                onAwake() {
+                    this.selfVars();
+                }
+                selfVars() {
+                }
                 onEnable() {
                     this.self = this.owner;
                     this.selfScene = this.self.scene;
@@ -2367,6 +2372,7 @@
             (function (BulletState) {
                 BulletState["attack"] = "attack";
                 BulletState["rebound"] = "rebound";
+                BulletState["stone"] = "stone";
             })(BulletState = GEnum.BulletState || (GEnum.BulletState = {}));
             let enemyType;
             (function (enemyType) {
@@ -2380,6 +2386,19 @@
                 enemySkin["bule"] = "Frame/UI/ui_square_002.png";
                 enemySkin["green"] = "Frame/UI/ui_square_009.png";
             })(enemySkin = GEnum.enemySkin || (GEnum.enemySkin = {}));
+            let enemyState;
+            (function (enemyState) {
+                enemyState["move"] = "move";
+                enemyState["stone"] = "stone";
+            })(enemyState = GEnum.enemyState || (GEnum.enemyState = {}));
+            let enemyMoveDir;
+            (function (enemyMoveDir) {
+                enemyMoveDir["up"] = "up";
+                enemyMoveDir["left"] = "left";
+                enemyMoveDir["down"] = "down";
+                enemyMoveDir["right"] = "right";
+                enemyMoveDir["stay"] = "stay";
+            })(enemyMoveDir = GEnum.enemyMoveDir || (GEnum.enemyMoveDir = {}));
         })(GEnum = GameControl.GEnum || (GameControl.GEnum = {}));
         let G;
         (function (G) {
@@ -2390,7 +2409,12 @@
     let GEnum = GameControl.GEnum;
 
     class UIMain_Enemy extends lwg.Admin.Object {
+        constructor() {
+            super(...arguments);
+            this.moveDir = GEnum.enemyMoveDir.down;
+        }
         lwgInit() {
+            this.moveDir = GEnum.enemyMoveDir.down;
             let num = this.self.getChildByName('Num');
             num.text = (Math.floor(Math.random() * 3) + 1).toString();
             let pic = this.self.getChildByName('Pic');
@@ -2412,8 +2436,55 @@
                     break;
             }
         }
+        onTriggerEnter(other, self) {
+            switch (other.label) {
+                case 'bullet':
+                    this.enemyAndEnemy(other, self);
+                    break;
+                case 'stone':
+                    this.enemyAndStone(other, self);
+                    break;
+                case 'enemy':
+                    this.enemyAndEnemy(other, self);
+                    break;
+                default:
+                    break;
+            }
+        }
+        enemyAndEnemy(other, self) {
+            this.moveDir = GEnum.enemyMoveDir.stay;
+        }
+        enemyAndStone(other, self) {
+            Math.floor(Math.random() * 2) === 1 ? this.moveDir = GEnum.enemyMoveDir.left : this.moveDir = GEnum.enemyMoveDir.right;
+        }
+        onTriggerExit(other, self) {
+            switch (other.label) {
+                case 'bullet':
+                    break;
+                case 'stone':
+                    this.moveDir = GEnum.enemyMoveDir.down;
+                    break;
+                case 'enemy':
+                    this.moveDir = GEnum.enemyMoveDir.down;
+                    break;
+                default:
+                    break;
+            }
+        }
         lwgOnUpdate() {
-            this.self.y += 1;
+            if (this.moveDir === GEnum.enemyMoveDir.left) {
+                this.self.x--;
+            }
+            else if (this.moveDir === GEnum.enemyMoveDir.right) {
+                this.self.x++;
+            }
+            else if (this.moveDir === GEnum.enemyMoveDir.down) {
+                this.self.y++;
+            }
+            else if (this.moveDir === GEnum.enemyMoveDir.up) {
+                this.self.y++;
+            }
+            else if (this.moveDir === GEnum.enemyMoveDir.stay) ;
             if (this.self.y >= this.selfScene['Protagonist'].y) {
                 this.self.removeSelf();
             }
@@ -2443,33 +2514,47 @@
         constructor() {
             super(...arguments);
             this.targetEnemy = new Laya.Sprite();
+            this.reboundRotae = 0;
             this.accelerated = 0;
-            this.speed = 70;
+            this.speed = 80;
         }
         lwgInit() {
-            let enemy = this.selfScene['EnemyParent'].getChildAt(0);
-            if (enemy) {
-                this.targetEnemy = enemy;
-            }
             this.bulletState = GEnum.BulletState.attack;
         }
         onTriggerEnter(other, self) {
+            switch (other.label) {
+                case 'enemy':
+                    this.bulletAndEnemy(other, self);
+                    break;
+                case 'stone':
+                    this.bulletAndStone(other, self);
+                    break;
+                default:
+                    break;
+            }
+        }
+        bulletAndEnemy(other, self) {
             let otherOwner = other.owner;
-            if (other.label === 'enemy') {
-                let num = otherOwner.getChildByName('Num');
-                if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
-                    if (this.bulletState === GEnum.BulletState.attack) {
-                        num.text = (Number(num.text) - 2).toString();
-                        if (Number(num.text) <= 0) {
-                            otherOwner.removeSelf();
-                        }
-                        this.self.removeSelf();
+            let num = otherOwner.getChildByName('Num');
+            if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
+                if (this.bulletState === GEnum.BulletState.attack) {
+                    num.text = (Number(num.text) - 2).toString();
+                    if (Number(num.text) <= 0) {
+                        otherOwner.removeSelf();
                     }
-                }
-                else {
-                    this.bulletState = GEnum.BulletState.rebound;
+                    this.self.removeSelf();
                 }
             }
+            else {
+                this.bulletState = GEnum.BulletState.rebound;
+                this.accelerated = 0;
+                this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : -Math.random() * this.speed / 3 + 10;
+            }
+        }
+        bulletAndStone(other, self) {
+            this.bulletState = GEnum.BulletState.rebound;
+            this.accelerated = 0;
+            this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : -Math.random() * this.speed / 3 + 10;
         }
         lwgOnUpdate() {
             if (this.bulletState === GEnum.BulletState.attack) {
@@ -2478,7 +2563,7 @@
                     return;
                 }
                 else {
-                    this.accelerated -= 1;
+                    this.accelerated -= 2;
                 }
                 this.self.x -= (this.speed + this.accelerated) * this.movePoint.x;
                 this.self.y -= (this.speed + this.accelerated) * this.movePoint.y;
@@ -2487,7 +2572,18 @@
                 }
             }
             else if (this.bulletState === GEnum.BulletState.rebound) {
-                this.self.rotation++;
+                if (this.speed / 2 + this.accelerated <= 0) {
+                    this.self.alpha -= 0.05;
+                    if (this.self.alpha <= 0) {
+                        this.self.removeSelf();
+                    }
+                }
+                else {
+                    this.self.rotation += this.reboundRotae;
+                    this.accelerated -= 2;
+                    this.self.x += (this.speed / 2 + this.accelerated) * this.movePoint.x;
+                    this.self.y += (this.speed / 2 + this.accelerated) * this.movePoint.y;
+                }
             }
         }
     }
@@ -2617,7 +2713,7 @@
         }
         lwgOnUpdate() {
             if (lwg.Global._gameStart) {
-                if (this.timer % 180 === 0) {
+                if (this.timer % 60 === 0) {
                     this.createEnemy();
                 }
                 this.timer++;

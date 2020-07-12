@@ -1,11 +1,15 @@
 import { lwg } from "../Lwg_Template/lwg";
-import { GEnum } from "../Lwg_Template/GameControl";
+import { GEnum, G } from "../Lwg_Template/GameControl";
 
 export default class UIMain_Enemy extends lwg.Admin.Object {
 
     /**怪物类型*/
     enemyType: string;
+    /**敌人当前的状态*/
+    enemyState: string;
     lwgInit(): void {
+        this.moveDir = GEnum.enemyMoveDir.down;
+        this.enemyState = GEnum.enemyState.move;
         let num = this.self.getChildByName('Num') as Laya.Label;
         num.text = (Math.floor(Math.random() * 3) + 1).toString();
 
@@ -15,7 +19,7 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
         switch (rand) {
             case 0:
                 pic.skin = GEnum.enemySkin.yellow;
-                this.enemyType =GEnum.enemyType.yellow;
+                this.enemyType = GEnum.enemyType.yellow;
                 break;
 
             case 1:
@@ -34,8 +38,63 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
         }
     }
 
+    onTriggerEnter(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
+        switch (other.label) {
+            case 'bullet':
+                this.enemyAndEnemy(other, self);
+                break;
+            case 'stone':
+                this.enemyAndStone(other, self);
+                break;
+            case 'enemy':
+                this.enemyAndEnemy(other, self);
+                break;
+            default:
+                break;
+        }
+    }
+
+    enemyAndEnemy(other: Laya.BoxCollider, self: Laya.BoxCollider) {
+        this.moveDir = GEnum.enemyMoveDir.stay;
+    }
+
+    enemyAndStone(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
+        Math.floor(Math.random() * 2) === 1 ? this.moveDir = GEnum.enemyMoveDir.left : this.moveDir = GEnum.enemyMoveDir.right;
+    }
+
+
+    onTriggerExit(other: Laya.BoxCollider, self: Laya.BoxCollider) {
+        switch (other.label) {
+            case 'bullet':
+                break;
+            case 'stone':
+                this.moveDir = GEnum.enemyMoveDir.down;
+                break;
+            case 'enemy':
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**移动方向*/
+    moveDir: string = GEnum.enemyMoveDir.down;
     lwgOnUpdate(): void {
-        this.self.y += 1;
+        if (this.enemyState === GEnum.enemyState.move) {
+            if (this.moveDir === GEnum.enemyMoveDir.left) {
+                this.self.x--;
+            } else if (this.moveDir === GEnum.enemyMoveDir.right) {
+                this.self.x++;
+            } else if (this.moveDir === GEnum.enemyMoveDir.down) {
+                this.self.y++;
+            } else if (this.moveDir === GEnum.enemyMoveDir.up) {
+                this.self.y++;
+            }
+        } else if (this.enemyState === GEnum.enemyState.await) {
+          
+        }
+
+
         if (this.self.y >= this.selfScene['Protagonist'].y) {
             this.self.removeSelf();
         }

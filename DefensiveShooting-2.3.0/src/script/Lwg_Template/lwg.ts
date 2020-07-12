@@ -1000,7 +1000,6 @@ export module lwg {
             constructor() {
                 super();
             }
-
             onAwake(): void {
 
             }
@@ -1035,6 +1034,13 @@ export module lwg {
                 super();
             }
 
+            onAwake(): void {
+                this.selfVars();
+            }
+            /**声明场景里的一些节点*/
+            selfVars(): void {
+
+            }
             onEnable(): void {
                 this.self = this.owner as Laya.Sprite;
                 this.selfScene = this.self.scene;
