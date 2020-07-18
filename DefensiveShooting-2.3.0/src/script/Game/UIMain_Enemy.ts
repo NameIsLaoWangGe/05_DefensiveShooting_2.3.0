@@ -1,5 +1,5 @@
-import { lwg } from "../Lwg_Template/lwg";
-import { GEnum, G } from "../Lwg_Template/GameControl";
+import { lwg, Admin } from "../Lwg_Template/lwg";
+import { GEnum, G } from "../Lwg_Template/Global";
 
 export default class UIMain_Enemy extends lwg.Admin.Object {
 
@@ -7,7 +7,16 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
     enemyType: string;
     /**敌人当前的状态*/
     enemyState: string;
-    lwgInit(): void {
+    /**当前是否在和石头碰撞中*/
+    stoneTime: boolean = false;
+    /**移动速度*/
+    speed: number;
+
+    selfNode(): void {
+
+    }
+
+    lwgOnEnable(): void {
         this.moveDir = GEnum.enemyMoveDir.down;
         this.enemyState = GEnum.enemyState.move;
         let num = this.self.getChildByName('Num') as Laya.Label;
@@ -20,19 +29,18 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
             case 0:
                 pic.skin = GEnum.enemySkin.yellow;
                 this.enemyType = GEnum.enemyType.yellow;
-                break;
 
+                break;
             case 1:
                 pic.skin = GEnum.enemySkin.bule;
                 this.enemyType = GEnum.enemyType.bule;
 
                 break;
-
             case 2:
                 pic.skin = GEnum.enemySkin.green;
                 this.enemyType = GEnum.enemyType.green;
-                break;
 
+                break;
             default:
                 break;
         }
@@ -54,11 +62,25 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
         }
     }
 
+    beforDir;
     enemyAndEnemy(other: Laya.BoxCollider, self: Laya.BoxCollider) {
+        this.beforDir = this.moveDir;
         this.moveDir = GEnum.enemyMoveDir.stay;
+        Laya.timer.frameOnce(30, this, f => {
+            this.moveDir = this.beforDir;
+            if (this.moveDir === GEnum.enemyMoveDir.stay) {
+                if (this.stoneTime) {
+                    Math.floor(Math.random() * 2) === 1 ? this.moveDir = GEnum.enemyMoveDir.left : this.moveDir = GEnum.enemyMoveDir.right;
+
+                } else {
+                    this.moveDir = GEnum.enemyMoveDir.down;
+                }
+            }
+        });
     }
 
     enemyAndStone(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
+        this.stoneTime = true;
         Math.floor(Math.random() * 2) === 1 ? this.moveDir = GEnum.enemyMoveDir.left : this.moveDir = GEnum.enemyMoveDir.right;
     }
 
@@ -68,6 +90,7 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
             case 'bullet':
                 break;
             case 'stone':
+                this.stoneTime = false;
                 this.moveDir = GEnum.enemyMoveDir.down;
                 break;
             case 'enemy':
@@ -77,24 +100,38 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
         }
     }
 
+    /**移动规则*/
+    moveRules(): void {
+        if (this.moveDir === GEnum.enemyMoveDir.left) {
+            if (this.stoneTime) {
+                this.self.x--;
+            } else {
+                this.moveDir = GEnum.enemyMoveDir.down;
+            }
+
+        } else if (this.moveDir === GEnum.enemyMoveDir.right) {
+            if (this.stoneTime) {
+                this.self.x++;
+            } else {
+                this.moveDir = GEnum.enemyMoveDir.down;
+            }
+
+        } else if (this.moveDir === GEnum.enemyMoveDir.down) {
+            this.self.y++;
+
+        } else if (this.moveDir === GEnum.enemyMoveDir.up) {
+
+            this.self.y++;
+        } 
+    }
+
     /**移动方向*/
     moveDir: string = GEnum.enemyMoveDir.down;
     lwgOnUpdate(): void {
-        if (this.enemyState === GEnum.enemyState.move) {
-            if (this.moveDir === GEnum.enemyMoveDir.left) {
-                this.self.x--;
-            } else if (this.moveDir === GEnum.enemyMoveDir.right) {
-                this.self.x++;
-            } else if (this.moveDir === GEnum.enemyMoveDir.down) {
-                this.self.y++;
-            } else if (this.moveDir === GEnum.enemyMoveDir.up) {
-                this.self.y++;
-            }
-        } else if (this.enemyState === GEnum.enemyState.await) {
-          
+        if (!Admin._gameStart) {
+            return;
         }
-
-
+        this.moveRules();
         if (this.self.y >= this.selfScene['Protagonist'].y) {
             this.self.removeSelf();
         }

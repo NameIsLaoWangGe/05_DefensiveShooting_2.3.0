@@ -1,3 +1,4 @@
+
 /**综合模板*/
 export module lwg {
     /**全局方法,全局变量，每个游戏不一样*/
@@ -677,12 +678,15 @@ export module lwg {
         export let _sceneControl: any = {};
         /**游戏当前处于什么状态中*/
         export let _gameState: string;
+        /**游戏是否结束*/
+        export let _gameStart: boolean = false;
 
         /**当前所有场景的名称*/
         export enum SceneName {
             UILoding = 'UILoding',
             UIStart = 'UIStart',
             UIMain = 'UIMain',
+            GameMain3D = 'GameMain3D',
             UIVictory = 'UIVictory',
             UIDefeated = 'UIDefeated',
             UIExecutionHint = 'UIExecutionHint',
@@ -698,7 +702,9 @@ export module lwg {
             UIAnchorXD = 'UIAnchorXD',
             UITurntable = 'UITurntable',
             UICaiDanQiang = 'UICaiDanQiang',
-            UICaidanPifu = 'UICaidanPifu'
+            UICaidanPifu = 'UICaidanPifu',
+            UIOperation = 'UIOperation',
+
         }
         /**游戏当前的状态*/
         export enum GameState {
@@ -884,6 +890,73 @@ export module lwg {
             _sceneControl[openCustomName].close();
         }
 
+        // /**场景打点次数*/
+        // let printPointNum: number = 0;
+        // /**
+        // * 场景打点,记录玩家进场景和出场景的次数
+        // * @param type 两种类型，一种是离开打点，一种是进入打点
+        // */
+        // export function printPoint(type, name: string): void {
+        //     switch (name) {
+        //         case SceneName.UILoding:
+        //             if (type === 'on') {
+        //                 ADManager.TAPoint(TaT.PageEnter, 'UIPreload');
+        //             } else if (type === 'dis') {
+        //                 ADManager.TAPoint(TaT.PageLeave, 'UIPreload');
+        //             }
+        //             break;
+        //         case SceneName.UIStart:
+        //             if (type === 'on') {
+        //                 ADManager.TAPoint(TaT.PageEnter, 'mianpage');
+        //             } else if (type === 'dis') {
+        //                 ADManager.TAPoint(TaT.PageLeave, 'mianpage');
+        //             }
+        //             break;
+        //         case SceneName.UIVictory:
+        //             if (type === 'on') {
+        //                 ADManager.TAPoint(TaT.PageEnter, 'successpage');
+        //             } else if (type === 'dis') {
+        //                 ADManager.TAPoint(TaT.PageLeave, 'successpage');
+        //             }
+        //             break;
+
+        //         case SceneName.UIDefeated:
+        //             if (type === 'on') {
+        //                 ADManager.TAPoint(TaT.PageEnter, 'failpage');
+        //             } else if (type === 'dis') {
+        //                 ADManager.TAPoint(TaT.PageLeave, 'failpage');
+        //             }
+        //             break;
+
+        //         case SceneName.UIExecutionHint:
+        //             if (type === 'on') {
+        //                 ADManager.TAPoint(TaT.PageEnter, 'noticketpage');
+        //             } else if (type === 'dis') {
+        //                 ADManager.TAPoint(TaT.PageLeave, 'noticketpage');
+        //             }
+        //             break;
+        //         case SceneName.UIPassHint:
+        //             if (type === 'on') {
+        //                 ADManager.TAPoint(TaT.PageEnter, 'freegiftpage');
+        //             } else if (type === 'dis') {
+        //                 ADManager.TAPoint(TaT.PageLeave, 'freegiftpage');
+        //             }
+        //             break;
+        //         case SceneName.UIPuase:
+        //             if (type === 'on') {
+        //                 ADManager.TAPoint(TaT.PageEnter, 'pausepage');
+        //             } else if (type === 'dis') {
+        //                 ADManager.TAPoint(TaT.PageLeave, 'pausepage');
+        //             }
+        //             break;
+        //         default:
+
+        //             break;
+        //     }
+        // printPointNum++;
+        // console.log('场景打点', printPointNum);
+        // }
+
         /**场景通用父类*/
         export class Scene extends Laya.Script {
             /**挂载当前脚本的节点*/
@@ -897,18 +970,18 @@ export module lwg {
                 // 类名
                 this.calssName = this['__proto__']['constructor'].name;
                 this.gameState(this.calssName);
-                this.selfVars();
+                this.selfNode();
                 this.variateInit();
                 this.adaptive();
             }
             onEnable() {
                 // 组件变为的self属性
                 this.self[this.calssName] = this;
-                this.lwgInit();
+                this.lwgOnEnable();
                 this.btnAndOpenAni();
             }
             /**声明场景里的一些节点*/
-            selfVars(): void {
+            selfNode(): void {
 
             }
             /**初始化一些变量*/
@@ -935,7 +1008,7 @@ export module lwg {
                 // console.log(lwg.Admin._gameState);
             }
             /**初始化，在onEnable中执行，重写即可覆盖*/
-            lwgInit(): void {
+            lwgOnEnable(): void {
                 // console.log('父类的初始化！');
             }
             /**通过openni返回的时间来延时开启点击事件*/
@@ -989,6 +1062,100 @@ export module lwg {
             }
         }
 
+        // /**场景通用父类*/
+        // export class Scene3D extends Laya.Script3D {
+        //     /**挂载当前脚本的节点*/
+        //     self: Laya.Scene3D;
+        //     calssName: string;
+        //     MainCamera: Laya.MeshSprite3D;
+        //     mainCameraFpos: Laya.Vector3 = new Laya.Vector3();
+        //     constructor() {
+        //         super();
+        //     }
+        //     onAwake(): void {
+        //         this.self = this.owner as Laya.Scene3D;
+        //         // 类名
+        //         this.calssName = this['__proto__']['constructor'].name;
+        //         this.gameState(this.calssName);
+        //         this.selfNode();
+        //         this.adaptive();
+
+        //         this.MainCamera = this.self.getChildByName("Main Camera") as Laya.MeshSprite3D;
+        //         if (this.MainCamera) {
+        //             this.mainCameraFpos.x = this.MainCamera.transform.localPositionX;
+        //             this.mainCameraFpos.y = this.MainCamera.transform.localPositionY;
+        //             this.mainCameraFpos.z = this.MainCamera.transform.localPositionZ;
+        //         }
+
+        //     }
+
+        //     onEnable() {
+        //         // 组件变为的self属性
+        //         this.self[this.calssName] = this;
+        //         this.lwgOnEnable();
+        //         this.btnOnClick();
+        //         this.adaptive();
+        //         this.openAni();
+        //         // printPoint('on', this.calssName);
+        //     }
+        //     /**场景背部全局变量*/
+        //     selfNode(): void {
+        //     }
+        //     /**游戏当前的状态*/
+        //     gameState(calssName): void {
+        //         switch (calssName) {
+        //             case SceneName.UIStart:
+        //                 _gameState = GameState.GameStart;
+        //                 break;
+        //             case SceneName.UIMain:
+        //                 _gameState = GameState.Play;
+        //                 break;
+        //             case SceneName.UIDefeated:
+        //                 _gameState = GameState.Defeated;
+        //                 break;
+        //             case SceneName.UIVictory:
+        //                 _gameState = GameState.Victory;
+        //                 break;
+        //             default:
+        //                 break;
+        //         }
+        //         // console.log(lwg.Admin._gameState);
+        //     }
+        //     /**初始化，在onEnable中执行，重写即可覆盖*/
+        //     lwgOnEnable(): void {
+        //         // console.log('父类的初始化！');
+        //     }
+        //     /**点击事件注册*/
+        //     btnOnClick(): void {
+        //     }
+        //     /**一些节点自适应*/
+        //     adaptive(): void {
+        //     }
+        //     /**开场动画*/
+        //     openAni(): void {
+        //     }
+        //     /**离场动画*/
+        //     vanishAni(): void {
+        //     }
+
+        //     onUpdate(): void {
+        //         this.lwgOnUpDate();
+        //     }
+        //     /**每帧更新时执行，尽量不要在这里写大循环逻辑或者使用*/
+        //     lwgOnUpDate(): void {
+
+        //     }
+
+        //     onDisable(): void {
+        //         // printPoint('dis', this.calssName);
+        //         this.lwgDisable();
+        //     }
+        //     /**离开时执行，子类不执行onDisable，只执行lwgDisable*/
+        //     lwgDisable(): void {
+
+        //     }
+        // }
+
         /**角色通用父类*/
         export class Person extends Laya.Script {
             /**挂载当前脚本的节点*/
@@ -1014,10 +1181,10 @@ export module lwg {
                 let calssName = this['__proto__']['constructor'].name;
                 // 组件变为的self属性
                 this.self[calssName] = this;
-                this.lwgInit();
+                this.lwgOnEnable();
             }
             /**初始化，在onEnable中执行，重写即可覆盖*/
-            lwgInit(): void {
+            lwgOnEnable(): void {
                 console.log('父类的初始化！');
             }
         }
@@ -1035,13 +1202,7 @@ export module lwg {
             }
 
             onAwake(): void {
-                this.selfVars();
-            }
-            /**声明场景里的一些节点*/
-            selfVars(): void {
-
-            }
-            onEnable(): void {
+                this.selfNode();
                 this.self = this.owner as Laya.Sprite;
                 this.selfScene = this.self.scene;
                 // 类名
@@ -1049,11 +1210,17 @@ export module lwg {
                 // 组件变为的self属性
                 this.self[calssName] = this;
                 this.rig = this.self.getComponent(Laya.RigidBody);
-                this.lwgInit();
+            }
+            /**声明场景里的一些节点*/
+            selfNode(): void {
+
+            }
+            onEnable(): void {
+                this.lwgOnEnable();
                 this.btnOnClick();
             }
             /**初始化，在onEnable中执行，重写即可覆盖*/
-            lwgInit(): void {
+            lwgOnEnable(): void {
                 console.log('父类的初始化！');
             }
             /**点击事件注册*/
@@ -1075,6 +1242,51 @@ export module lwg {
             }
 
         }
+
+        // /**物件通用父类*/
+        // export class Object3D extends Laya.Script3D {
+        //     /**挂载当前脚本的节点*/
+        //     self: Laya.MeshSprite3D;
+        //     /**所在的3D场景*/
+        //     selfScene: Laya.Scene3D;
+        //     /***/
+        //     selfTransform: Laya.Transform3D;
+        //     /**物理组件*/
+        //     rig3D: Laya.Rigidbody3D;
+        //     /**物理组件*/
+        //     BoxCol3D: Laya.PhysicsCollider;
+        //     constructor() {
+        //         super();
+        //     }
+        //     onEnable(): void {
+        //         this.self = this.owner as Laya.MeshSprite3D;
+        //         this.selfTransform = this.self.transform;
+        //         this.selfScene = this.self.scene;
+        //         // 类名
+        //         let calssName = this['__proto__']['constructor'].name;
+        //         // 组件变为的self属性
+        //         this.self[calssName] = this;
+        //         this.rig3D = this.self.getComponent(Laya.Rigidbody3D);
+        //         this.BoxCol3D = this.self.getComponent(Laya.PhysicsCollider) as Laya.PhysicsCollider;
+        //         this.lwgOnEnable();
+        //     }
+        //     /**初始化，在onEnable中执行，重写即可覆盖*/
+        //     lwgOnEnable(): void {
+        //         console.log('父类的初始化！');
+        //     }
+
+        //     onUpdate(): void {
+        //         this.lwgOnUpdate();
+        //     }
+        //     lwgOnUpdate(): void {
+        //     }
+        //     onDisable(): void {
+        //     }
+        //     /**离开时执行，子类不执行onDisable，只执行lwgDisable*/
+        //     lwgDisable(): void {
+
+        //     }
+        // }
     }
 
     export module Effects {
@@ -1154,11 +1366,11 @@ export module lwg {
                 this.self.pivotX = this.self.width / 2;
                 this.self.pivotY = this.self.height / 2;
                 this.timer = 0;
-                this.lwgInit();
+                this.lwgOnEnable();
                 this.propertyAssign();
             }
             /**初始化，在onEnable中执行，重写即可覆盖*/
-            lwgInit(): void {
+            lwgOnEnable(): void {
             }
             /**初始化特效单元的属性*/
             initProperty(): void {
@@ -2017,10 +2229,15 @@ export module lwg {
                     btnEffect = new Btn_LargenEffect();
                     break;
             }
-            target.on(Laya.Event.MOUSE_DOWN, caller, down === null ? btnEffect.down : down);
-            target.on(Laya.Event.MOUSE_MOVE, caller, move === null ? btnEffect.move : move);
-            target.on(Laya.Event.MOUSE_UP, caller, up === null ? btnEffect.up : up);
-            target.on(Laya.Event.MOUSE_OUT, caller, out === null ? btnEffect.out : out);
+            target.on(Laya.Event.MOUSE_DOWN, caller, down);
+            target.on(Laya.Event.MOUSE_MOVE, caller, move);
+            target.on(Laya.Event.MOUSE_UP, caller, up);
+            target.on(Laya.Event.MOUSE_OUT, caller, out);
+
+            target.on(Laya.Event.MOUSE_DOWN, caller, btnEffect.down);
+            target.on(Laya.Event.MOUSE_MOVE, caller, btnEffect.move);
+            target.on(Laya.Event.MOUSE_UP, caller, btnEffect.up);
+            target.on(Laya.Event.MOUSE_OUT, caller, btnEffect.out);
         }
 
         /**
@@ -2051,50 +2268,17 @@ export module lwg {
             }
             // btnPrintPoint('on', target);
 
-            target.off(Laya.Event.MOUSE_DOWN, caller, down === null ? btnEffect.down : down);
-            target.off(Laya.Event.MOUSE_MOVE, caller, move === null ? btnEffect.move : move);
-            target.off(Laya.Event.MOUSE_UP, caller, up === null ? btnEffect.up : up);
-            target.off(Laya.Event.MOUSE_OUT, caller, out === null ? btnEffect.out : out);
+            target.off(Laya.Event.MOUSE_DOWN, caller, down);
+            target.off(Laya.Event.MOUSE_MOVE, caller, move);
+            target.off(Laya.Event.MOUSE_UP, caller, up);
+            target.off(Laya.Event.MOUSE_OUT, caller, out);
+
+            target.off(Laya.Event.MOUSE_DOWN, caller, btnEffect.down);
+            target.off(Laya.Event.MOUSE_MOVE, caller, btnEffect.move);
+            target.off(Laya.Event.MOUSE_UP, caller, btnEffect.up);
+            target.off(Laya.Event.MOUSE_OUT, caller, btnEffect.out);
         }
     }
-
-    // let btnPrintNum: number = 0;
-    // /**
-    //  * 按钮打点，记录玩家点击的次数
-    //  * @param type 按钮是进入时打点还是点击时打点
-    //  * @param name 按钮名称
-    //  * */
-    // export function btnPrintPoint(type, target): void {
-    //     switch (target) {
-    //         // 游戏界面
-    //         case lwg.Global.BtnPauseNode:
-    //             if (type === 'on') {
-    //                 ADManager.TAPoint(TaT.BtnShow, 'pausebt_play');
-    //             } else if (type === 'dis') {
-    //                 ADManager.TAPoint(TaT.BtnClick, 'pausebt_play');
-    //             }
-    //             break;
-    //         case lwg.Global.BtnHintNode:
-    //             if (type === 'on') {
-    //                 ADManager.TAPoint(TaT.BtnShow, 'ADrwardbt_play');
-    //             } else if (type === 'dis') {
-    //                 ADManager.TAPoint(TaT.BtnClick, 'ADrwardbt_play');
-    //             }
-    //             break;
-    //         case lwg.Global.BtnAgainNode:
-    //             if (type === 'on') {
-    //                 ADManager.TAPoint(TaT.BtnShow, 'returnbt_play');
-    //             } else if (type === 'dis') {
-    //                 ADManager.TAPoint(TaT.BtnClick, 'returnbt_play');
-    //             }
-    //             break;
-
-    //         default:
-    //             break;
-    //     }
-    //     // btnPrintNum++;
-    //     // console.log('按钮打点' + btnPrintNum);
-    // }
 
     /**
      * 没有效果的点击事件，有时候用于防止界面的事件穿透
@@ -2199,6 +2383,35 @@ export module lwg {
         }
     }
 
+    export module Animation3D {
+        /**
+         * 物体的缓动
+         * @param target 移动目标
+         * @param v3_Pos 目标的位置引用（transform.position）;
+         * @param v3_Rotate 移动速度
+         */
+        export function Pos_Euler(target: Laya.MeshSprite3D, v3_Pos: Laya.Vector3, v3_Rotate: Laya.Vector3, time: number) {
+            //创建一个Tween的属性对像
+            let moveTarget = target.transform.position;
+
+            Laya.Tween.to(moveTarget, {
+                x: v3_Pos.x, y: v3_Pos.y, z: v3_Pos.z, update: new Laya.Handler(this, f => {
+                    target.transform.position = (new Laya.Vector3(moveTarget.x, moveTarget.y, moveTarget.z));
+                    //移动灯光位置
+                })
+            }, time, null);
+
+            let rotateTarget = target.transform.localRotationEuler;
+            Laya.Tween.to(rotateTarget, {
+                x: v3_Rotate.x, y: v3_Rotate.y, z: v3_Rotate.z, update: new Laya.Handler(this, f => {
+                    target.transform.localRotationEulerX = (new Laya.Vector3(rotateTarget.x, rotateTarget.y, rotateTarget.z)).x;
+                    target.transform.localRotationEulerY = (new Laya.Vector3(rotateTarget.x, rotateTarget.y, rotateTarget.z)).y;
+                    target.transform.localRotationEulerZ = (new Laya.Vector3(rotateTarget.x, rotateTarget.y, rotateTarget.z)).z;
+                    //移动灯光位置
+                })
+            }, time, null);
+        }
+    }
 
     /**动画模块*/
     export module Animation {
@@ -3073,10 +3286,25 @@ export module lwg {
     /**工具模块*/
     export module Tools {
         /**
-                * RGB三个颜色值转换成16进制的字符串‘000000’，需要加上‘#’；
-                * */
+         * 二维坐标中一个点按照另一个点旋转一定的角度后，得到的点
+         * @param x0 原点X
+         * @param y0 原点Y
+         * @param x1 旋转点X
+         * @param y1 旋转点Y
+         * @param angle 角度
+         */
+        export function dotRotateXY(x0, y0, x1, y1, angle): Laya.Point {
+            let x2 = x0 + (x1 - x0) * Math.cos(angle * Math.PI / 180) - (y1 - y0) * Math.sin(angle * Math.PI / 180);
+            let y2 = y0 + (x1 - x0) * Math.sin(angle * Math.PI / 180) + (y1 - y0) * Math.cos(angle * Math.PI / 180);
+            return new Laya.Point(x2, y2);
+        }
+
+
+        /**
+         * RGB三个颜色值转换成16进制的字符串‘000000’，需要加上‘#’；
+         * */
         export function toHexString(r, g, b) {
-            return ("00000" + (r << 16 | g << 8 | b).toString(16)).slice(-6);
+            return '#' + ("00000" + (r << 16 | g << 8 | b).toString(16)).slice(-6);
         }
 
         /**
@@ -3084,7 +3312,7 @@ export module lwg {
          * @param obj1 物体1
          * @param obj2 物体2
          */
-        export function twoObjectsLen_3D(obj1: Laya.Sprite3D, obj2: Laya.Sprite3D): number {
+        export function twoObjectsLen_3D(obj1: Laya.MeshSprite3D, obj2: Laya.MeshSprite3D): number {
             let obj1V3: Laya.Vector3 = obj1.transform.position;
             let obj2V3: Laya.Vector3 = obj2.transform.position;
             let p = new Laya.Vector3();
@@ -3092,6 +3320,13 @@ export module lwg {
             Laya.Vector3.subtract(obj1V3, obj2V3, p);
             let lenp = Laya.Vector3.scalarLength(p);
             return lenp;
+        }
+
+        /**返回两个二维物体的距离*/
+        export function twoObjectsLen_2D(obj1: Laya.Sprite, obj2: Laya.Sprite): number {
+            let point = new Laya.Point(obj1.x, obj1.y);
+            let len = point.distance(obj2.x, obj2.y);
+            return len;
         }
 
         /**
@@ -3107,7 +3342,7 @@ export module lwg {
         }
 
         /**
-          * 输出一个向量相对于一个点的反向向量，或者反向向量的单位向量，用于一个物体被另一个物体击退
+          * 输出一个向量相对于一个点的反向向量，或者反向向量的单位向量，可用于一个物体被另一个物体击退
           * @param type 二维还是三维
           * @param Vecoter1 固定点
           * @param Vecoter2 反弹物体向量
@@ -3370,7 +3605,5 @@ export let Animation = lwg.Animation;
 export let EventAdmin = lwg.EventAdmin;
 export let Tools = lwg.Tools;
 export let Effects = lwg.Effects;
-
-
-
+export let Animation3D = lwg.Animation3D;
 

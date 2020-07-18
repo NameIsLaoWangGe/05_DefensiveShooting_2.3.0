@@ -2,7 +2,6 @@
     "x":0,
     "type":"Sprite",
     "selectedBox":34,
-    "selecteID":33,
     "searchKey":"Sprite,Bullet",
     "props":{"y":0,"x":0,"width":40,"presetID":1,"preset":"laya/pages/Prefab/Bullet.prefab","pivotY":20,"pivotX":20,"name":"Bullet","isPresetRoot":true,"height":40},
     "nodeParent":-1,
@@ -25,38 +24,6 @@
             "isAniNode":true,
             "hasChild":false,
             "compId":33,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"BoxCollider",
-            "switchAble":true,
-            "searchKey":"BoxCollider",
-            "removeAble":true,
-            "props":{"width":40,"presetID":3,"preset":"laya/pages/Prefab/Bullet.prefab","height":40},
-            "nodeParent":34,
-            "label":"BoxCollider(Bullet)",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":35,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"RigidBody",
-            "switchAble":true,
-            "searchKey":"RigidBody",
-            "removeAble":true,
-            "props":{"presetID":4,"preset":"laya/pages/Prefab/Bullet.prefab","gravityScale":0,"bullet":true,"allowSleep":false},
-            "nodeParent":34,
-            "label":"RigidBody(Bullet)",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":36,
             "child":[
                 ]
         }],

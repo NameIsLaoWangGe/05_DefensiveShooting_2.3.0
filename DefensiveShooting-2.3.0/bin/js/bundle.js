@@ -469,11 +469,13 @@
         let Admin;
         (function (Admin) {
             Admin._sceneControl = {};
+            Admin._gameStart = false;
             let SceneName;
             (function (SceneName) {
                 SceneName["UILoding"] = "UILoding";
                 SceneName["UIStart"] = "UIStart";
                 SceneName["UIMain"] = "UIMain";
+                SceneName["GameMain3D"] = "GameMain3D";
                 SceneName["UIVictory"] = "UIVictory";
                 SceneName["UIDefeated"] = "UIDefeated";
                 SceneName["UIExecutionHint"] = "UIExecutionHint";
@@ -490,6 +492,7 @@
                 SceneName["UITurntable"] = "UITurntable";
                 SceneName["UICaiDanQiang"] = "UICaiDanQiang";
                 SceneName["UICaidanPifu"] = "UICaidanPifu";
+                SceneName["UIOperation"] = "UIOperation";
             })(SceneName = Admin.SceneName || (Admin.SceneName = {}));
             let GameState;
             (function (GameState) {
@@ -645,16 +648,16 @@
                     this.self = this.owner;
                     this.calssName = this['__proto__']['constructor'].name;
                     this.gameState(this.calssName);
-                    this.selfVars();
+                    this.selfNode();
                     this.variateInit();
                     this.adaptive();
                 }
                 onEnable() {
                     this.self[this.calssName] = this;
-                    this.lwgInit();
+                    this.lwgOnEnable();
                     this.btnAndOpenAni();
                 }
-                selfVars() {
+                selfNode() {
                 }
                 variateInit() {
                 }
@@ -676,7 +679,7 @@
                             break;
                     }
                 }
-                lwgInit() {
+                lwgOnEnable() {
                 }
                 btnAndOpenAni() {
                     let time = this.openAni();
@@ -726,9 +729,9 @@
                     this.rig = this.self.getComponent(Laya.RigidBody);
                     let calssName = this['__proto__']['constructor'].name;
                     this.self[calssName] = this;
-                    this.lwgInit();
+                    this.lwgOnEnable();
                 }
-                lwgInit() {
+                lwgOnEnable() {
                     console.log('父类的初始化！');
                 }
             }
@@ -738,20 +741,20 @@
                     super();
                 }
                 onAwake() {
-                    this.selfVars();
-                }
-                selfVars() {
-                }
-                onEnable() {
+                    this.selfNode();
                     this.self = this.owner;
                     this.selfScene = this.self.scene;
                     let calssName = this['__proto__']['constructor'].name;
                     this.self[calssName] = this;
                     this.rig = this.self.getComponent(Laya.RigidBody);
-                    this.lwgInit();
+                }
+                selfNode() {
+                }
+                onEnable() {
+                    this.lwgOnEnable();
                     this.btnOnClick();
                 }
-                lwgInit() {
+                lwgOnEnable() {
                     console.log('父类的初始化！');
                 }
                 btnOnClick() {
@@ -812,10 +815,10 @@
                     this.self.pivotX = this.self.width / 2;
                     this.self.pivotY = this.self.height / 2;
                     this.timer = 0;
-                    this.lwgInit();
+                    this.lwgOnEnable();
                     this.propertyAssign();
                 }
-                lwgInit() {
+                lwgOnEnable() {
                 }
                 initProperty() {
                 }
@@ -1549,10 +1552,14 @@
                         btnEffect = new Btn_LargenEffect();
                         break;
                 }
-                target.on(Laya.Event.MOUSE_DOWN, caller, down === null ? btnEffect.down : down);
-                target.on(Laya.Event.MOUSE_MOVE, caller, move === null ? btnEffect.move : move);
-                target.on(Laya.Event.MOUSE_UP, caller, up === null ? btnEffect.up : up);
-                target.on(Laya.Event.MOUSE_OUT, caller, out === null ? btnEffect.out : out);
+                target.on(Laya.Event.MOUSE_DOWN, caller, down);
+                target.on(Laya.Event.MOUSE_MOVE, caller, move);
+                target.on(Laya.Event.MOUSE_UP, caller, up);
+                target.on(Laya.Event.MOUSE_OUT, caller, out);
+                target.on(Laya.Event.MOUSE_DOWN, caller, btnEffect.down);
+                target.on(Laya.Event.MOUSE_MOVE, caller, btnEffect.move);
+                target.on(Laya.Event.MOUSE_UP, caller, btnEffect.up);
+                target.on(Laya.Event.MOUSE_OUT, caller, btnEffect.out);
             }
             Click.on = on;
             function off(effect, target, caller, down, move, up, out) {
@@ -1570,10 +1577,14 @@
                     default:
                         break;
                 }
-                target.off(Laya.Event.MOUSE_DOWN, caller, down === null ? btnEffect.down : down);
-                target.off(Laya.Event.MOUSE_MOVE, caller, move === null ? btnEffect.move : move);
-                target.off(Laya.Event.MOUSE_UP, caller, up === null ? btnEffect.up : up);
-                target.off(Laya.Event.MOUSE_OUT, caller, out === null ? btnEffect.out : out);
+                target.off(Laya.Event.MOUSE_DOWN, caller, down);
+                target.off(Laya.Event.MOUSE_MOVE, caller, move);
+                target.off(Laya.Event.MOUSE_UP, caller, up);
+                target.off(Laya.Event.MOUSE_OUT, caller, out);
+                target.off(Laya.Event.MOUSE_DOWN, caller, btnEffect.down);
+                target.off(Laya.Event.MOUSE_MOVE, caller, btnEffect.move);
+                target.off(Laya.Event.MOUSE_UP, caller, btnEffect.up);
+                target.off(Laya.Event.MOUSE_OUT, caller, btnEffect.out);
             }
             Click.off = off;
         })(Click = lwg.Click || (lwg.Click = {}));
@@ -1646,6 +1657,26 @@
             }
         }
         lwg.Btn_Beetle = Btn_Beetle;
+        let Animation3D;
+        (function (Animation3D) {
+            function Pos_Euler(target, v3_Pos, v3_Rotate, time) {
+                let moveTarget = target.transform.position;
+                Laya.Tween.to(moveTarget, {
+                    x: v3_Pos.x, y: v3_Pos.y, z: v3_Pos.z, update: new Laya.Handler(this, f => {
+                        target.transform.position = (new Laya.Vector3(moveTarget.x, moveTarget.y, moveTarget.z));
+                    })
+                }, time, null);
+                let rotateTarget = target.transform.localRotationEuler;
+                Laya.Tween.to(rotateTarget, {
+                    x: v3_Rotate.x, y: v3_Rotate.y, z: v3_Rotate.z, update: new Laya.Handler(this, f => {
+                        target.transform.localRotationEulerX = (new Laya.Vector3(rotateTarget.x, rotateTarget.y, rotateTarget.z)).x;
+                        target.transform.localRotationEulerY = (new Laya.Vector3(rotateTarget.x, rotateTarget.y, rotateTarget.z)).y;
+                        target.transform.localRotationEulerZ = (new Laya.Vector3(rotateTarget.x, rotateTarget.y, rotateTarget.z)).z;
+                    })
+                }, time, null);
+            }
+            Animation3D.Pos_Euler = Pos_Euler;
+        })(Animation3D = lwg.Animation3D || (lwg.Animation3D = {}));
         let Animation;
         (function (Animation) {
             function simple_Rotate(node, Frotate, Erotate, time, func) {
@@ -2121,8 +2152,14 @@
         })(PalyAudio = lwg.PalyAudio || (lwg.PalyAudio = {}));
         let Tools;
         (function (Tools) {
+            function dotRotateXY(x0, y0, x1, y1, angle) {
+                let x2 = x0 + (x1 - x0) * Math.cos(angle * Math.PI / 180) - (y1 - y0) * Math.sin(angle * Math.PI / 180);
+                let y2 = y0 + (x1 - x0) * Math.sin(angle * Math.PI / 180) + (y1 - y0) * Math.cos(angle * Math.PI / 180);
+                return new Laya.Point(x2, y2);
+            }
+            Tools.dotRotateXY = dotRotateXY;
             function toHexString(r, g, b) {
-                return ("00000" + (r << 16 | g << 8 | b).toString(16)).slice(-6);
+                return '#' + ("00000" + (r << 16 | g << 8 | b).toString(16)).slice(-6);
             }
             Tools.toHexString = toHexString;
             function twoObjectsLen_3D(obj1, obj2) {
@@ -2134,6 +2171,12 @@
                 return lenp;
             }
             Tools.twoObjectsLen_3D = twoObjectsLen_3D;
+            function twoObjectsLen_2D(obj1, obj2) {
+                let point = new Laya.Point(obj1.x, obj1.y);
+                let len = point.distance(obj2.x, obj2.y);
+                return len;
+            }
+            Tools.twoObjectsLen_2D = twoObjectsLen_2D;
             function twoSubV3_3D(V3_01, V3_02) {
                 let p = new Laya.Vector3();
                 Laya.Vector3.subtract(V3_01, V3_02, p);
@@ -2351,6 +2394,7 @@
     let EventAdmin = lwg.EventAdmin;
     let Tools = lwg.Tools;
     let Effects = lwg.Effects;
+    let Animation3D = lwg.Animation3D;
 
     var GameControl;
     (function (GameControl) {
@@ -2390,6 +2434,7 @@
             (function (enemyState) {
                 enemyState["move"] = "move";
                 enemyState["stone"] = "stone";
+                enemyState["await"] = "stone";
             })(enemyState = GEnum.enemyState || (GEnum.enemyState = {}));
             let enemyMoveDir;
             (function (enemyMoveDir) {
@@ -2411,10 +2456,14 @@
     class UIMain_Enemy extends lwg.Admin.Object {
         constructor() {
             super(...arguments);
+            this.stoneTime = false;
             this.moveDir = GEnum.enemyMoveDir.down;
         }
-        lwgInit() {
+        selfNode() {
+        }
+        lwgOnEnable() {
             this.moveDir = GEnum.enemyMoveDir.down;
+            this.enemyState = GEnum.enemyState.move;
             let num = this.self.getChildByName('Num');
             num.text = (Math.floor(Math.random() * 3) + 1).toString();
             let pic = this.self.getChildByName('Pic');
@@ -2452,9 +2501,22 @@
             }
         }
         enemyAndEnemy(other, self) {
+            this.beforDir = this.moveDir;
             this.moveDir = GEnum.enemyMoveDir.stay;
+            Laya.timer.frameOnce(30, this, f => {
+                this.moveDir = this.beforDir;
+                if (this.moveDir === GEnum.enemyMoveDir.stay) {
+                    if (this.stoneTime) {
+                        Math.floor(Math.random() * 2) === 1 ? this.moveDir = GEnum.enemyMoveDir.left : this.moveDir = GEnum.enemyMoveDir.right;
+                    }
+                    else {
+                        this.moveDir = GEnum.enemyMoveDir.down;
+                    }
+                }
+            });
         }
         enemyAndStone(other, self) {
+            this.stoneTime = true;
             Math.floor(Math.random() * 2) === 1 ? this.moveDir = GEnum.enemyMoveDir.left : this.moveDir = GEnum.enemyMoveDir.right;
         }
         onTriggerExit(other, self) {
@@ -2462,21 +2524,31 @@
                 case 'bullet':
                     break;
                 case 'stone':
+                    this.stoneTime = false;
                     this.moveDir = GEnum.enemyMoveDir.down;
                     break;
                 case 'enemy':
-                    this.moveDir = GEnum.enemyMoveDir.down;
                     break;
                 default:
                     break;
             }
         }
-        lwgOnUpdate() {
+        moveRules() {
             if (this.moveDir === GEnum.enemyMoveDir.left) {
-                this.self.x--;
+                if (this.stoneTime) {
+                    this.self.x--;
+                }
+                else {
+                    this.moveDir = GEnum.enemyMoveDir.down;
+                }
             }
             else if (this.moveDir === GEnum.enemyMoveDir.right) {
-                this.self.x++;
+                if (this.stoneTime) {
+                    this.self.x++;
+                }
+                else {
+                    this.moveDir = GEnum.enemyMoveDir.down;
+                }
             }
             else if (this.moveDir === GEnum.enemyMoveDir.down) {
                 this.self.y++;
@@ -2484,7 +2556,12 @@
             else if (this.moveDir === GEnum.enemyMoveDir.up) {
                 this.self.y++;
             }
-            else if (this.moveDir === GEnum.enemyMoveDir.stay) ;
+        }
+        lwgOnUpdate() {
+            if (!Admin._gameStart) {
+                return;
+            }
+            this.moveRules();
             if (this.self.y >= this.selfScene['Protagonist'].y) {
                 this.self.removeSelf();
             }
@@ -2518,7 +2595,7 @@
             this.accelerated = 0;
             this.speed = 80;
         }
-        lwgInit() {
+        lwgOnEnable() {
             this.bulletState = GEnum.BulletState.attack;
         }
         onTriggerEnter(other, self) {
@@ -2558,6 +2635,17 @@
         }
         lwgOnUpdate() {
             if (this.bulletState === GEnum.BulletState.attack) {
+                for (let index = 0; index < this.selfScene['EnemyParent'].numChildren; index++) {
+                    const element = this.selfScene['EnemyParent'].getChildAt(index);
+                    if (element) {
+                        let len = lwg.Tools.twoObjectsLen_2D(this.self, element);
+                        if (len < 50) {
+                            this.self.removeSelf();
+                            element.removeSelf();
+                            return;
+                        }
+                    }
+                }
                 if (this.accelerated >= this.speed) {
                     this.accelerated = 0;
                     return;
@@ -2593,15 +2681,15 @@
             super(...arguments);
             this.timer = 0;
         }
-        selfVars() {
+        selfNode() {
         }
-        lwgInit() {
+        lwgOnEnable() {
             this.timer = 0;
             this.bulletNum = 0;
             this.self['Protagonist'].addComponent(UIMain_Protagonist);
-            lwg.Global._gameStart = true;
             this.self['GuideLine'].alpha = 0;
             this.touchColor = null;
+            lwg.Admin._gameStart = true;
         }
         createEnemy() {
             let enemy;
@@ -2712,8 +2800,8 @@
             this.touchColor = null;
         }
         lwgOnUpdate() {
-            if (lwg.Global._gameStart) {
-                if (this.timer % 60 === 0) {
+            if (lwg.Admin._gameStart) {
+                if (this.timer % 100 === 0) {
                     this.createEnemy();
                 }
                 this.timer++;
@@ -2727,7 +2815,7 @@
             this.mianSceneOk = false;
             this.time = 0;
         }
-        lwgInit() {
+        lwgOnEnable() {
             lwg.Admin._openScene(lwg.Admin.SceneName.UIMain, null, this.self, null);
         }
         dataLoading() {

@@ -1,5 +1,6 @@
 import { lwg, EventAdmin } from "../Lwg_Template/lwg";
-import { G, GEnum } from "../Lwg_Template/GameControl";
+import { GEnum, G } from "../Lwg_Template/Global";
+
 
 export default class UIMain_Bullet extends lwg.Admin.Object {
 
@@ -12,8 +13,9 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
     /**移动方向的单位向量*/
     movePoint: Laya.Point;
 
-    lwgInit(): void {
+    lwgOnEnable(): void {
         this.bulletState = GEnum.BulletState.attack;
+     
     }
 
     onTriggerEnter(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
@@ -63,17 +65,31 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
     speed: number = 80;
     lwgOnUpdate(): void {
         if (this.bulletState === GEnum.BulletState.attack) {
+            for (let index = 0; index < (this.selfScene['EnemyParent'] as Laya.Sprite).numChildren; index++) {
+                const element = (this.selfScene['EnemyParent'] as Laya.Sprite).getChildAt(index) as Laya.Sprite;
+                if (element) {
+                    let len = lwg.Tools.twoObjectsLen_2D(this.self, element);
+                    if (len < 50) {
+                        this.self.removeSelf();
+                        element.removeSelf();
+                        return;
+                    }
+                }
+            }
+
             if (this.accelerated >= this.speed) {
                 this.accelerated = 0;
                 return;
             } else {
                 this.accelerated -= 2;
             }
+
             this.self.x -= (this.speed + this.accelerated) * this.movePoint.x;
             this.self.y -= (this.speed + this.accelerated) * this.movePoint.y;
             if (this.self.y < -100 || this.self.y > Laya.stage.height || this.self.x > Laya.stage.width || this.self.x < 0) {
                 this.self.removeSelf();
             }
+
         } else if (this.bulletState === GEnum.BulletState.rebound) {
 
             if (this.speed / 2 + this.accelerated <= 0) {
@@ -88,5 +104,9 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
                 this.self.y += (this.speed / 2 + this.accelerated) * this.movePoint.y;
             }
         }
+
+
     }
+
+
 }

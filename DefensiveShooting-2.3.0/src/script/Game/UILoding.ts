@@ -11,7 +11,7 @@ export default class UILoding extends lwg.Admin.Scene {
     /**进度条遮罩*/
     private Mask: Laya.Image;
 
-    lwgInit(): void {
+    lwgOnEnable(): void {
         // ADManager.TAPoint(TaT.PageEnter, 'UIPreload');
 
         // this.Mask = this.self['Mask'];
@@ -22,7 +22,6 @@ export default class UILoding extends lwg.Admin.Scene {
         // lwg.Sk.skLoding();
         // this.lodeUserInfo();
         // this.dataLoading();
-
         lwg.Admin._openScene(lwg.Admin.SceneName.UIMain, null, this.self, null);
     }
 

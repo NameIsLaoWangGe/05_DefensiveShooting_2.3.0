@@ -4,7 +4,7 @@ import ADManager, { TaT } from "../../TJ/Admanager";
 import UIMain_Enemy from "./UIMain_Enemy";
 import UIMain_Protagonist from "./UIMain_Protagonist";
 import UIMain_Bullet from "./UIMain_Bullet";
-import { GEnum, G } from "../Lwg_Template/GameControl";
+import { GEnum, G } from "../Lwg_Template/Global";
 
 export default class UIMain extends lwg.Admin.Scene {
     /** @prop {name:Enemy, tips:"敌人", type:Prefab, default:true}*/
@@ -16,20 +16,17 @@ export default class UIMain extends lwg.Admin.Scene {
      * 当前发射子弹类型
      */
     launchType: string;
-    /**记录当前应该攻击什么怪物，是离自己最近的*/
 
-    selfVars(): void {
-
+    selfNode(): void {
     }
 
-    lwgInit(): void {
+    lwgOnEnable(): void {
         this.timer = 0;
         this.bulletNum = 0;
         this.self['Protagonist'].addComponent(UIMain_Protagonist);
-        lwg.Global._gameStart = true;
         this.self['GuideLine'].alpha = 0;
         this.touchColor = null;
-
+        lwg.Admin._gameStart = true;
     }
 
 
@@ -170,8 +167,8 @@ export default class UIMain extends lwg.Admin.Scene {
 
     timer: number = 0;
     lwgOnUpdate(): void {
-        if (lwg.Global._gameStart) {
-            if (this.timer % 60 === 0) {
+        if (lwg.Admin._gameStart) {
+            if (this.timer % 100 === 0) {
                 this.createEnemy();
             }
             this.timer++;
