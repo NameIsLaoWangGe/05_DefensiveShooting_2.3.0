@@ -1202,7 +1202,6 @@ export module lwg {
             }
 
             onAwake(): void {
-                this.selfNode();
                 this.self = this.owner as Laya.Sprite;
                 this.selfScene = this.self.scene;
                 // 类名
@@ -1210,6 +1209,7 @@ export module lwg {
                 // 组件变为的self属性
                 this.self[calssName] = this;
                 this.rig = this.self.getComponent(Laya.RigidBody);
+                this.selfNode();
             }
             /**声明场景里的一些节点*/
             selfNode(): void {

@@ -741,12 +741,12 @@
                     super();
                 }
                 onAwake() {
-                    this.selfNode();
                     this.self = this.owner;
                     this.selfScene = this.self.scene;
                     let calssName = this['__proto__']['constructor'].name;
                     this.self[calssName] = this;
                     this.rig = this.self.getComponent(Laya.RigidBody);
+                    this.selfNode();
                 }
                 selfNode() {
                 }
@@ -2595,57 +2595,59 @@
             this.accelerated = 0;
             this.speed = 80;
         }
+        selfNode() {
+            this.EnemyParent = this.selfScene['EnemyParent'];
+            this.BarrierParent = this.selfScene['BarrierParent'];
+        }
         lwgOnEnable() {
             this.bulletState = GEnum.BulletState.attack;
         }
-        onTriggerEnter(other, self) {
-            switch (other.label) {
-                case 'enemy':
-                    this.bulletAndEnemy(other, self);
-                    break;
-                case 'stone':
-                    this.bulletAndStone(other, self);
-                    break;
-                default:
-                    break;
-            }
-        }
-        bulletAndEnemy(other, self) {
-            let otherOwner = other.owner;
-            let num = otherOwner.getChildByName('Num');
-            if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
-                if (this.bulletState === GEnum.BulletState.attack) {
-                    num.text = (Number(num.text) - 2).toString();
-                    if (Number(num.text) <= 0) {
-                        otherOwner.removeSelf();
+        attackEnemy() {
+            for (let index = 0; index < this.EnemyParent.numChildren; index++) {
+                const enemy = this.EnemyParent.getChildAt(index);
+                if (enemy) {
+                    let len = lwg.Tools.twoObjectsLen_2D(this.self, enemy);
+                    if (len < 50) {
+                        let num = enemy.getChildByName('Num');
+                        if (enemy['UIMain_Enemy'].enemyType === this.bulletType) {
+                            if (this.bulletState === GEnum.BulletState.attack) {
+                                num.text = (Number(num.text) - 2).toString();
+                                if (Number(num.text) <= 0) {
+                                    enemy.removeSelf();
+                                }
+                                this.self.removeSelf();
+                            }
+                        }
+                        else {
+                            this.bulletState = GEnum.BulletState.rebound;
+                            this.accelerated = 0;
+                            this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : -Math.random() * this.speed / 3 + 10;
+                        }
+                        return;
                     }
-                    this.self.removeSelf();
                 }
             }
-            else {
-                this.bulletState = GEnum.BulletState.rebound;
-                this.accelerated = 0;
-                this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : -Math.random() * this.speed / 3 + 10;
-            }
         }
-        bulletAndStone(other, self) {
-            this.bulletState = GEnum.BulletState.rebound;
-            this.accelerated = 0;
-            this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : -Math.random() * this.speed / 3 + 10;
-        }
-        lwgOnUpdate() {
-            if (this.bulletState === GEnum.BulletState.attack) {
-                for (let index = 0; index < this.selfScene['EnemyParent'].numChildren; index++) {
-                    const element = this.selfScene['EnemyParent'].getChildAt(index);
-                    if (element) {
-                        let len = lwg.Tools.twoObjectsLen_2D(this.self, element);
+        attackBarrier() {
+            if (this.BarrierParent) {
+                for (let index = 0; index < this.BarrierParent.numChildren; index++) {
+                    const barrier = this.BarrierParent.getChildAt(index);
+                    if (barrier) {
+                        let len = lwg.Tools.twoObjectsLen_2D(this.self, barrier);
                         if (len < 50) {
-                            this.self.removeSelf();
-                            element.removeSelf();
+                            this.bulletState = GEnum.BulletState.rebound;
+                            this.accelerated = 0;
+                            this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : -Math.random() * this.speed / 3 + 10;
                             return;
                         }
                     }
                 }
+            }
+        }
+        lwgOnUpdate() {
+            if (this.bulletState === GEnum.BulletState.attack) {
+                this.attackEnemy();
+                this.attackBarrier();
                 if (this.accelerated >= this.speed) {
                     this.accelerated = 0;
                     return;
