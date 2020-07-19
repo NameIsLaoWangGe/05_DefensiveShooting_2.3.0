@@ -239,8 +239,6 @@ export module lwg {
             lwg.Global._goldNum += number;
             let Num = lwg.Global.GoldNumNode.getChildByName('Num') as Laya.FontClip;
             Num.value = lwg.Global._goldNum.toString();
-
-            lwg.LocalStorage.addData();
         }
 
         /**指代当前剩余体力节点*/
@@ -274,7 +272,6 @@ export module lwg {
             let num = lwg.Global.ExecutionNumNode.getChildByName('Num') as Laya.FontClip;
             num.value = lwg.Global._execution.toString();
 
-            lwg.LocalStorage.addData();
         }
 
         /**指代当前暂停游戏节点*/
@@ -561,79 +558,13 @@ export module lwg {
         }
     }
 
-    /**本地信息存储*/
-    export module LocalStorage {
-        let storageData: any;
-        /**上传本地数据到缓存,一般在游戏胜利后和购买皮肤后上传*/
-        export function addData(): void {
-            storageData = {
-                '_gameLevel': lwg.Global._gameLevel,
-                '_goldNum': lwg.Global._goldNum,
-                '_execution': lwg.Global._execution,
-                '_exemptExTime': lwg.Global._exemptExTime,
-                '_freeHintTime': lwg.Global._freeHintTime,
-                '_hotShareTime': lwg.Global._hotShareTime,
-                '_addExDate': lwg.Global._addExDate,
-                '_addExHours': lwg.Global._addExHours,
-                '_addMinutes': lwg.Global._addMinutes,
-                '_buyNum': lwg.Global._buyNum,
-                '_currentPifu': lwg.Global._currentPifu,
-                '_havePifu': lwg.Global._havePifu,
-                '_watchAdsNum': lwg.Global._watchAdsNum,
-                '_huangpihaozi': lwg.Global._huangpihaozi,
-                '_zibiyazi': lwg.Global._zibiyazi,
-                '_kejigongzhu': lwg.Global._kejigongzhu,
-                '_pickPaintedNum': lwg.Global._pickPaintedNum,
-                '_haimiangongzhu': lwg.Global._haimiangongzhu
-            }
-            // 转换成字符串上传
-            let data: string = JSON.stringify(storageData);
-            Laya.LocalStorage.setJSON('storageData', data);
-        }
-
-        /**清除本地数据*/
-        export function clearData(): void {
-            Laya.LocalStorage.clear();
-        }
-
-        /**获取本地数据，在onlode场景获取*/
-        export function getData(): any {
-            let storageData: string = Laya.LocalStorage.getJSON('storageData');
-            if (storageData) {
-                // 将字符串转换成json
-                let data: any = JSON.parse(storageData);
-                return data;
-            } else {
-                lwg.Global._gameLevel = 1;
-                lwg.Global._goldNum = 0;
-                lwg.Global._execution = 15;
-                lwg.Global._exemptExTime = null;
-                lwg.Global._freeHintTime = null;
-                lwg.Global._hotShareTime = null;
-                lwg.Global._addExDate = (new Date).getDate();
-                lwg.Global._addExHours = (new Date).getHours();
-                lwg.Global._addMinutes = (new Date).getMinutes();
-                lwg.Global._buyNum = 1;
-                lwg.Global._currentPifu = Enum.PifuAllName[0];
-                lwg.Global._havePifu = ['01_gongzhu'];
-                lwg.Global._watchAdsNum = 0;
-                lwg.Global._huangpihaozi = false;
-                lwg.Global._zibiyazi = false;
-                lwg.Global._kejigongzhu = false;
-                lwg.Global._haimiangongzhu = false;
-                lwg.Global._pickPaintedNum = 0;
-
-                return null;
-            }
-        }
-    }
+  
 
     /**事件类*/
     export module EventAdmin {
 
         export enum EventType {
-            btnOnClick = 'btnOnClick',
-            aniComplete = 'aniComplete',
+            gameOver = 'gameOver',
         }
 
         export class EventClass {
@@ -871,7 +802,6 @@ export module lwg {
                 Admin.openLevelNum++;
                 Admin._openLevelNumCustom();
             }
-            LocalStorage.addData();
         }
 
         /**
@@ -2272,11 +2202,6 @@ export module lwg {
             target.off(Laya.Event.MOUSE_MOVE, caller, move);
             target.off(Laya.Event.MOUSE_UP, caller, up);
             target.off(Laya.Event.MOUSE_OUT, caller, out);
-
-            target.off(Laya.Event.MOUSE_DOWN, caller, btnEffect.down);
-            target.off(Laya.Event.MOUSE_MOVE, caller, btnEffect.move);
-            target.off(Laya.Event.MOUSE_UP, caller, btnEffect.up);
-            target.off(Laya.Event.MOUSE_OUT, caller, btnEffect.out);
         }
     }
 

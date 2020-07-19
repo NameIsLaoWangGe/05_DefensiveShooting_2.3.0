@@ -1,11 +1,9 @@
 import { lwg, EventAdmin } from "../Lwg_Template/lwg";
-import { GEnum, G } from "../Lwg_Template/Global";
+import { GEnum, GVariate } from "../Lwg_Template/Global";
 
 
 export default class UIMain_Bullet extends lwg.Admin.Object {
 
-    /**当前锁定的目标*/
-    targetEnemy: Laya.Sprite = new Laya.Sprite();
     /**子弹状态*/
     bulletState: string;
     /**子弹类型*/
@@ -22,10 +20,7 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
     }
     lwgOnEnable(): void {
         this.bulletState = GEnum.BulletState.attack;
-
     }
-
-
 
     /**攻击敌人*/
     attackEnemy(): void {
@@ -55,22 +50,60 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
         }
     }
 
-    /**攻击石头*/
-    attackBarrier(): void {
+    /**攻击一些特殊物体*/
+    attackSpecialObj(): void {
         if (this.BarrierParent) {
             for (let index = 0; index < this.BarrierParent.numChildren; index++) {
-                const barrier = this.BarrierParent.getChildAt(index) as Laya.Sprite;;
-                if (barrier) {
-                    let len = lwg.Tools.twoObjectsLen_2D(this.self, barrier);
+                const specialObj = this.BarrierParent.getChildAt(index) as Laya.Sprite;;
+                if (specialObj) {
+                    let len = lwg.Tools.twoObjectsLen_2D(this.self, specialObj);
                     if (len < 50) {
-                        this.bulletState = GEnum.BulletState.rebound;
-                        this.accelerated = 0;
+                        switch (specialObj.name) {
+                            case GEnum.SpecialObj.stone:
+                                this.attackStone(specialObj);
+                                break;
+                            case GEnum.SpecialObj.split:
 
-                        this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : - Math.random() * this.speed / 3 + 10;
+                                break;
+
+                            default:
+                                break;
+                        }
                         return;
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 和石头的碰撞
+     * */
+    attackStone(stone): void {
+        // 石头生命值结束后会消失
+        let Num = stone.getChildByName('Num') as Laya.Label;
+        Num.text = (Number(Num.text) - 1).toString();
+        if (Num.text <= '0') {
+            stone.removeSelf();
+            this.self.removeSelf();
+        }
+        // 改变子弹移动状态
+        this.bulletState = GEnum.BulletState.rebound;
+        this.accelerated = 0;
+
+        this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : - Math.random() * this.speed / 3 + 10;
+    }
+
+    /**
+      * 和分裂装置的碰撞
+      * */
+    attackSplit(split): void {
+        // 石头生命值结束后会消失
+        let Num = split.getChildByName('Num') as Laya.Label;
+        Num.text = (Number(Num.text) - 1).toString();
+        if (Num.text <= '0') {
+            split.removeSelf();
+            this.self.removeSelf();
         }
     }
 
@@ -83,7 +116,7 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
     lwgOnUpdate(): void {
         if (this.bulletState === GEnum.BulletState.attack) {
             this.attackEnemy();
-            this.attackBarrier();
+            this.attackSpecialObj();
             if (this.accelerated >= this.speed) {
                 this.accelerated = 0;
                 return;
@@ -112,44 +145,4 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
             }
         }
     }
-
-    /**有bug，弃用*/
-    //  onTriggerEnter(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
-    //     switch (other.label) {
-    //         case 'enemy':
-    //             this.bulletAndEnemy(other, self);
-    //             break;
-    //         case 'stone':
-    //             this.bulletAndStone(other, self);
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
-
-    // bulletAndEnemy(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
-    //     let otherOwner = other.owner;
-    //     let num = otherOwner.getChildByName('Num') as Laya.Label;
-    //     if (otherOwner['UIMain_Enemy'].enemyType === this.bulletType) {
-    //         if (this.bulletState === GEnum.BulletState.attack) {
-    //             num.text = (Number(num.text) - 2).toString();
-    //             if (Number(num.text) <= 0) {
-    //                 otherOwner.removeSelf();
-    //             }
-    //             this.self.removeSelf();
-    //         }
-    //     } else {
-    //         this.bulletState = GEnum.BulletState.rebound;
-    //         this.accelerated = 0;
-
-    //         this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : - Math.random() * this.speed / 3 + 10;
-    //     }
-    // }
-
-    // bulletAndStone(other: Laya.BoxCollider, self: Laya.BoxCollider): void {
-    //     this.bulletState = GEnum.BulletState.rebound;
-    //     this.accelerated = 0;
-
-    //     this.reboundRotae = Math.floor(Math.random() * 2) === 1 ? Math.random() * this.speed / 3 + 10 : - Math.random() * this.speed / 3 + 10;
-    // }
 }

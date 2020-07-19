@@ -1,10 +1,9 @@
-import { lwg, EventAdmin } from "../Lwg_Template/lwg";
+import { lwg, EventAdmin, Click } from "../Lwg_Template/lwg";
 import RecordManager from "../../TJ/RecordManager";
 import ADManager, { TaT } from "../../TJ/Admanager";
 import UIMain_Enemy from "./UIMain_Enemy";
-import UIMain_Protagonist from "./UIMain_Protagonist";
 import UIMain_Bullet from "./UIMain_Bullet";
-import { GEnum, G } from "../Lwg_Template/Global";
+import { GEnum, GVariate } from "../Lwg_Template/Global";
 
 export default class UIMain extends lwg.Admin.Scene {
     /** @prop {name:Enemy, tips:"敌人", type:Prefab, default:true}*/
@@ -18,17 +17,43 @@ export default class UIMain extends lwg.Admin.Scene {
     launchType: string;
 
     selfNode(): void {
+
     }
 
     lwgOnEnable(): void {
         this.timer = 0;
         this.bulletNum = 0;
-        this.self['Protagonist'].addComponent(UIMain_Protagonist);
         this.self['GuideLine'].alpha = 0;
         this.touchColor = null;
         lwg.Admin._gameStart = true;
+        GVariate._currentBlood = GVariate._sumBlood;
+        this.addBlood(0);
+
+        EventAdmin.EventClass.reg(EventAdmin.EventType.gameOver, EventAdmin.EventClass, (a) => {
+            console.log(a);
+            this.GameOver();
+        });
     }
 
+    /**游戏失败*/
+    GameOver(): void {
+        // lwg.Admin._gameStart = false;
+        this.btnOffClick();
+    }
+
+    /**
+    * 血量变化
+    * @param number 血量变化值，负数则减少血量
+   */
+    addBlood(number: number): void {
+        GVariate._currentBlood += number;
+        if (GVariate._currentBlood <= 98) {
+            EventAdmin.EventClass.notify(EventAdmin.EventType.gameOver,[3]);
+        }
+        let numStr = GVariate._currentBlood + '/' + GVariate._sumBlood;
+        let Num = this.self['Blood'].getChildByName('Num') as Laya.Label;
+        Num.text = numStr;
+    }
 
     /**子弹数量*/
     bulletNum: number;
@@ -71,14 +96,19 @@ export default class UIMain extends lwg.Admin.Scene {
             default:
                 break;
         }
-        G.bulletNum++;
+        GVariate._bulletNum++;
         return bullet;
     }
 
     btnOnClick(): void {
-        lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
-        lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
-        lwg.Click.on(lwg.Click.ClickType.noEffect, null, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
+        lwg.Click.on(Click.ClickType.noEffect, null, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
+        lwg.Click.on(Click.ClickType.noEffect, null, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
+        lwg.Click.on(Click.ClickType.noEffect, null, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
+    }
+    btnOffClick(): void {
+        lwg.Click.off(Click.ClickType.noEffect, this.self['BtnYellow'], this, this.clickDwon, null, null, null);
+        lwg.Click.off(Click.ClickType.noEffect, this.self['BtnBlue'], this, this.clickDwon, null, null, null);
+        lwg.Click.off(Click.ClickType.noEffect, this.self['BtnGreen'], this, this.clickDwon, null, null, null);
     }
 
     touchColor: Laya.Sprite;
@@ -106,7 +136,6 @@ export default class UIMain extends lwg.Admin.Scene {
                 this.self['GuideLine'].y = this.self['BtnBlue'].y;
                 this.self['GuideLine'].alpha = 1;
 
-
                 break;
             case 'BtnGreen':
                 this.launchType = GEnum.bulletType.green;
@@ -124,6 +153,9 @@ export default class UIMain extends lwg.Admin.Scene {
                 break;
         }
     }
+
+
+
     onStageMouseMove(e: Laya.Event): void {
         if (this.touchColor !== null) {
             let x = e.stageX;

@@ -1,6 +1,7 @@
 import UIMain from './UIMain';
-import { lwg } from '../Lwg_Template/lwg';
+import { lwg, Global } from '../Lwg_Template/lwg';
 import ADManager, { TaT } from '../../TJ/Admanager';
+import { GVariate, GData } from '../Lwg_Template/Global';
 export default class UILoding extends lwg.Admin.Scene {
     /**游戏加载进度条*/
     private Progress: Laya.Sprite;
@@ -20,7 +21,7 @@ export default class UILoding extends lwg.Admin.Scene {
         //     lwg.PalyAudio.playMusic(lwg.Enum.voiceUrl.bgm, 0, 1000);
         // }
         // lwg.Sk.skLoding();
-        // this.lodeUserInfo();
+        this.lodeUserInfo();
         // this.dataLoading();
         lwg.Admin._openScene(lwg.Admin.SceneName.UIMain, null, this.self, null);
     }
@@ -61,38 +62,16 @@ export default class UILoding extends lwg.Admin.Scene {
 
     /**加载玩家信息*/
     lodeUserInfo(): void {
-        let data: any = lwg.LocalStorage.getData();
+        let data: any = GData.getData();
         // console.log(data);
+        /**当前金币数量*/
         if (data) {
-            lwg.Global._gameLevel = data._gameLevel;
-            lwg.Global._goldNum = data._goldNum;
-            lwg.Global._execution = data._execution;
-
-            lwg.Global._exemptExTime = data._exemptExTime;
-            let d1 = (new Date()).getDate();
-            if (d1 !== lwg.Global._exemptExTime) {
-                lwg.Global._exemptEx = true;
-                console.log('今天还有一次免体力进入的机会！');
-            } else {
-                lwg.Global._exemptEx = false;
-                console.log('今天没有免体力进入的机会！');
-            }
-
-            lwg.Global._freeHintTime = data._freeHintTime;
-            let d2 = (new Date()).getDate();
-            if (d2 !== lwg.Global._freeHintTime) {
-                lwg.Global._freetHint = true;
-                console.log('今天还有一次双击免费提示的机会！');
-            } else {
-                lwg.Global._freetHint = false;
-                console.log('今天没有双击免费提示的机会！');
-            }
-            // lwg.Global._buyNum = data._buyNum;
-            // lwg.Global._currentPifu = data._currentPifu;
-            // lwg.Global._havePifu = data._havePifu;
-            // lwg.Global._watchAdsNum = data._watchAdsNum;
-            // lwg.Global._gameOverAdvModel = data._gameOverAdvModel;
-            // lwg.Global._whetherAdv = data._whetherAdv;
+            GVariate._gameLevel = data._gameLevel;
+            GVariate._execution = data._execution;
+            GVariate._goldNum = data._goldNum;
+            GVariate._sumBlood = data._sumBlood;
+        } else {
+            GData.addData();
         }
     }
 

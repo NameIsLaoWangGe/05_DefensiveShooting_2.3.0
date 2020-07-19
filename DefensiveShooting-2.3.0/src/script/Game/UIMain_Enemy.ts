@@ -1,5 +1,5 @@
 import { lwg, Admin } from "../Lwg_Template/lwg";
-import { GEnum, G } from "../Lwg_Template/Global";
+import { GEnum, GVariate } from "../Lwg_Template/Global";
 
 export default class UIMain_Enemy extends lwg.Admin.Object {
 
@@ -62,6 +62,7 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
         }
     }
 
+    /**当两个敌人碰撞的时候，两个会停以下，然后继续走，纪录停下之前的方向*/ 
     beforDir;
     enemyAndEnemy(other: Laya.BoxCollider, self: Laya.BoxCollider) {
         this.beforDir = this.moveDir;
@@ -83,7 +84,6 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
         this.stoneTime = true;
         Math.floor(Math.random() * 2) === 1 ? this.moveDir = GEnum.enemyMoveDir.left : this.moveDir = GEnum.enemyMoveDir.right;
     }
-
 
     onTriggerExit(other: Laya.BoxCollider, self: Laya.BoxCollider) {
         switch (other.label) {
@@ -122,7 +122,7 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
         } else if (this.moveDir === GEnum.enemyMoveDir.up) {
 
             this.self.y++;
-        } 
+        }
     }
 
     /**移动方向*/
@@ -132,8 +132,9 @@ export default class UIMain_Enemy extends lwg.Admin.Object {
             return;
         }
         this.moveRules();
-        if (this.self.y >= this.selfScene['Protagonist'].y) {
+        if (this.self.y >= this.selfScene['Blood'].y) {
             this.self.removeSelf();
+            this.selfScene[lwg.Admin.SceneName.UIMain].addBlood(-1);
         }
     }
 }
