@@ -183,6 +183,7 @@ export default class UIMain extends lwg.Admin.Scene {
         }
     }
 
+    movePoint: Laya.Point = null;
     onStageMouseMove(e: Laya.Event): void {
         if (this.touchColor !== null) {
             let x = e.stageX;
@@ -194,33 +195,41 @@ export default class UIMain extends lwg.Admin.Scene {
             let line = this.self['GuideLine'].getChildByName('Line') as Laya.Image;
             line.height = len;
 
-            let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
-            this.self['GuideLine'].rotation = lwg.Tools.vector_Angle(movePoint.x, movePoint.y);
+            this.movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
+            this.self['GuideLine'].rotation = lwg.Tools.vector_Angle(this.movePoint.x, this.movePoint.y);
             this.touchColor.rotation = this.self['GuideLine'].rotation;
-
-            this.self[this.touchColor.name]
         }
     }
 
     onStageMouseUp(e: Laya.Event): void {
-        let x = e.stageX;
-        let y = e.stageY;
-        let point = new Laya.Point(x, y);
-        // console.log(point);
+        // let x = e.stageX;
+        // let y = e.stageY;
+        // let point = new Laya.Point(x, y);
+        // // console.log(point);
+        // if (this.touchColor !== null) {
+        //     let distance = point.distance(this.touchColor.x, this.touchColor.y);
+        //     if (distance > 100) {
+        //         let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
+        //         movePoint.normalize();
+        //         EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.protagonist, this.launchColor, null, this.touchColor.x, this.touchColor.y, movePoint, 70]);
+        //     }
+        // }
+        // this.self['GuideLine'].alpha = 0;
+        // // this.touchColor.rotation = 0;
+        this.touchColor = null;
+        this.time = 0;
+    }
+    time: number = 0;
+    lwgOnUpdate(): void {
         if (this.touchColor !== null) {
-            let distance = point.distance(this.touchColor.x, this.touchColor.y);
-            if (distance > 100) {
-                let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
-                movePoint.normalize();
-                EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.protagonist, this.launchColor, null, this.touchColor.x, this.touchColor.y, movePoint, 70]);
+            this.time++;
+            if (this.time % 15 == 0) {
+                if (this.movePoint !== null) {
+                    console.log('发射子弹');
+                    this.movePoint.normalize();
+                    EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.protagonist, this.launchColor, null, this.touchColor.x, this.touchColor.y, this.movePoint, 70]);
+                }
             }
         }
-        this.self['GuideLine'].alpha = 0;
-        // this.touchColor.rotation = 0;
-        this.touchColor = null;
-    }
-
-    lwgOnUpdate(): void {
-
     }
 }
