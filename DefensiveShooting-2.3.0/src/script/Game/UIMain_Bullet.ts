@@ -1,4 +1,4 @@
-import { lwg, EventAdmin } from "../Lwg_Template/lwg";
+import { lwg, EventAdmin, Tools } from "../Lwg_Template/lwg";
 import { GEnum, GVariate } from "../Lwg_Template/Global";
 
 
@@ -6,14 +6,23 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
 
     /**子弹状态*/
     bulletState: string;
-    /**子弹类型*/
-    bulletType: string;
+    /**子弹颜色*/
+    bulletColor: string;
     /**移动方向的单位向量*/
     movePoint: Laya.Point;
     /**敌人父节点*/
     EnemyParent: Laya.Sprite;
     /**障碍物的父节点*/
     BarrierParent: Laya.Sprite;
+    /**是谁发射的子弹*/
+    whoFired: string;
+    /**旋转方向*/
+    reboundRotae: number = 0;
+    /**加速度*/
+    accelerated: number = 0;
+    /**移动速度*/
+    speed: number = 0;
+
     selfNode(): void {
         this.EnemyParent = this.selfScene['EnemyParent'];
         this.BarrierParent = this.selfScene['BarrierParent'];
@@ -30,7 +39,7 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
                 let len = lwg.Tools.twoObjectsLen_2D(this.self, enemy);
                 if (len < 50) {
                     let num = enemy.getChildByName('Num') as Laya.Label;
-                    if (enemy['UIMain_Enemy'].enemyType === this.bulletType) {
+                    if (enemy['UIMain_Enemy'].enemyType === this.bulletColor) {
                         if (this.bulletState === GEnum.BulletState.attack) {
                             num.text = (Number(num.text) - 2).toString();
                             if (Number(num.text) <= 0) {
@@ -62,8 +71,8 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
                             case GEnum.SpecialObj.stone:
                                 this.attackStone(specialObj);
                                 break;
-                            case GEnum.SpecialObj.split:
-
+                            case GEnum.SpecialObj.commonSplit:
+                                this.attackSplit(specialObj);
                                 break;
 
                             default:
@@ -96,23 +105,24 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
 
     /**
       * 和分裂装置的碰撞
+      * 碰撞之后会消失，然后分裂成数个子弹，向四周发射，威力不减
       * */
     attackSplit(split): void {
-        // 石头生命值结束后会消失
-        let Num = split.getChildByName('Num') as Laya.Label;
-        Num.text = (Number(Num.text) - 1).toString();
-        if (Num.text <= '0') {
-            split.removeSelf();
+        if (this.whoFired !== GEnum.BulletWhoFired.split) {
+            // 石头生命值结束后会消失
+            let Num = split.getChildByName('Num') as Laya.Label;
+            Num.text = (Number(Num.text) - 1).toString();
+            if (Num.text <= '0') {
+                split.removeSelf();
+            }
             this.self.removeSelf();
+            for (let index = 0; index < 4; index++) {
+                EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.split, this.bulletColor, null, split.x, split.y, Tools.angle_Vector(90 * index + 45), 40]);
+            }
         }
     }
 
-    /**旋转方向*/
-    reboundRotae: number = 0;
-    /**加速度*/
-    accelerated: number = 0;
-    /**移动速度*/
-    speed: number = 80;
+
     lwgOnUpdate(): void {
         if (this.bulletState === GEnum.BulletState.attack) {
             this.attackEnemy();
@@ -121,9 +131,11 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
                 this.accelerated = 0;
                 return;
             } else {
-                this.accelerated -= 2;
+                if (this.speed + this.accelerated <= 10) {
+                } else {
+                    this.accelerated -= 2;
+                }
             }
-
             this.self.x -= (this.speed + this.accelerated) * this.movePoint.x;
             this.self.y -= (this.speed + this.accelerated) * this.movePoint.y;
             if (this.self.y < -100 || this.self.y > Laya.stage.height || this.self.x > Laya.stage.width || this.self.x < 0) {

@@ -60,11 +60,16 @@ export module Global {
 
     /**游戏中用到的枚举*/
     export module GEnum {
-        /**子弹类型*/
-        export enum bulletType {
+        /**子弹颜色*/
+        export enum bulletColor {
             yellow = 'yellow',
             bule = 'bule',
             green = 'green',
+        }
+
+        /**子弹特殊效果*/
+        export enum bulletBuff {
+
         }
 
         /**子弹图片地址*/
@@ -79,6 +84,12 @@ export module Global {
             attack = 'attack',
             rebound = 'rebound',
             stone = 'stone'
+        }
+
+        /**是谁发射的子弹*/
+        export enum BulletWhoFired {
+            protagonist = 'protagonist',
+            split = 'split',
         }
 
         /**敌人类型*/
@@ -113,10 +124,16 @@ export module Global {
 
         /**敌人的移动方向*/
         export enum SpecialObj {
-            /**石头*/ 
+            /**石头*/
             stone = 'Stone',
-            /**分裂装置*/ 
-            split = 'Split',
+            /**普通分裂装置*/
+            commonSplit = 'CommonSplit',
+        }
+
+        /**事件类型*/
+        export enum EventType {
+            createBullet = 'createBullet',
+            createEnemy = 'createEnemy',
         }
 
     }

@@ -14,14 +14,13 @@ export default class UIMain extends lwg.Admin.Scene {
     /**
      * 当前发射子弹类型
      */
-    launchType: string;
+    launchColor: string;
 
     selfNode(): void {
 
     }
 
     lwgOnEnable(): void {
-        this.timer = 0;
         this.bulletNum = 0;
         this.self['GuideLine'].alpha = 0;
         this.touchColor = null;
@@ -29,15 +28,29 @@ export default class UIMain extends lwg.Admin.Scene {
         GVariate._currentBlood = GVariate._sumBlood;
         this.addBlood(0);
 
-        EventAdmin.EventClass.reg(EventAdmin.EventType.gameOver, EventAdmin.EventClass, (a) => {
-            console.log(a);
+        EventAdmin.EventClass.reg(EventAdmin.EventType.gameOver, this, () => {
             this.GameOver();
+        });
+
+        EventAdmin.EventClass.reg(GEnum.EventType.createEnemy, this, () => {
+            this.createEnemy();
+        });
+
+        EventAdmin.EventClass.reg(GEnum.EventType.createBullet, this, (whoFired, color, buff, x, y, movePoint, speed) => {
+            this.createBullet(whoFired, color, buff, x, y, movePoint, speed);
+        });
+
+        Laya.timer.frameLoop(60, this, f => {
+            if (!lwg.Admin._gameStart) {
+                return;
+            }
+            EventAdmin.EventClass.notify(GEnum.EventType.createEnemy);
         });
     }
 
     /**游戏失败*/
     GameOver(): void {
-        // lwg.Admin._gameStart = false;
+        lwg.Admin._gameStart = false;
         this.btnOffClick();
     }
 
@@ -47,16 +60,15 @@ export default class UIMain extends lwg.Admin.Scene {
    */
     addBlood(number: number): void {
         GVariate._currentBlood += number;
-        if (GVariate._currentBlood <= 98) {
-            EventAdmin.EventClass.notify(EventAdmin.EventType.gameOver,[3]);
+        if (GVariate._currentBlood <= 0) {
+            EventAdmin.EventClass.notify(EventAdmin.EventType.gameOver, );
         }
         let numStr = GVariate._currentBlood + '/' + GVariate._sumBlood;
         let Num = this.self['Blood'].getChildByName('Num') as Laya.Label;
         Num.text = numStr;
     }
 
-    /**子弹数量*/
-    bulletNum: number;
+
     createEnemy(): Laya.Sprite {
         let enemy: Laya.Sprite;
         enemy = Laya.Pool.getItemByCreateFun('enemy', this.Enemy.create, this.Enemy);
@@ -65,31 +77,48 @@ export default class UIMain extends lwg.Admin.Scene {
         enemy.addComponent(UIMain_Enemy);
         enemy.pos(randX, 0);
         enemy.zOrder = 0;
-        this.bulletNum++;
         return enemy;
     }
 
-    createBullet(x, y): Laya.Sprite {
+    /**子弹数量*/
+    bulletNum: number;
+    /**
+     * 创建一个子弹
+     * @param whoFired 谁发射的子弹
+     * @param color 子弹颜色
+     * @param buff 特殊效果
+     * @param x 初始位置X
+     * @param y 初始位置Y
+     * @param movePoint 移动方向向量
+     * @param speed 初始移动速度
+     */
+    createBullet(whoFired: string, color: string, buff: string, x: number, y: number, movePoint: Laya.Point, speed: number): Laya.Sprite {
         let bullet: Laya.Sprite;
         bullet = Laya.Pool.getItemByCreateFun('bullet', this.Bullet.create, this.Bullet);
         this.self['BulletParent'].addChild(bullet);
         bullet.pos(x, y);
         bullet.zOrder = 0;
-        bullet.addComponent(UIMain_Bullet);
+
+        let script = bullet.addComponent(UIMain_Bullet);
+        script.whoFired = whoFired;
+        script.movePoint = movePoint;
+        script.speed = speed;
+
+        bullet.rotation = lwg.Tools.vector_Angle(movePoint.x, movePoint.y);
 
         let pic = bullet.getChildByName('Pic') as Laya.Image;
-        switch (this.launchType) {
-            case GEnum.bulletType.yellow:
+        switch (color) {
+            case GEnum.bulletColor.yellow:
                 pic.skin = GEnum.bulletSkin.yellow;
-                bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.yellow;
+                script.bulletColor = GEnum.bulletColor.yellow;
                 break;
-            case GEnum.bulletType.bule:
+            case GEnum.bulletColor.bule:
                 pic.skin = GEnum.bulletSkin.bule;
-                bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.bule;
+                script.bulletColor = GEnum.bulletColor.bule;
                 break;
-            case GEnum.bulletType.green:
+            case GEnum.bulletColor.green:
                 pic.skin = GEnum.bulletSkin.green;
-                bullet['UIMain_Bullet'].bulletType = GEnum.bulletType.green;
+                script.bulletColor = GEnum.bulletColor.green;
 
                 break;
 
@@ -117,7 +146,7 @@ export default class UIMain extends lwg.Admin.Scene {
         // console.log(this.touchColor);
         switch (this.touchColor.name) {
             case 'BtnYellow':
-                this.launchType = GEnum.bulletType.yellow;
+                this.launchColor = GEnum.bulletColor.yellow;
                 this.self['BtnYellow'].scale(1.1, 1.1);
                 this.self['BtnBlue'].scale(1, 1);
                 this.self['BtnGreen'].scale(1, 1);
@@ -127,7 +156,7 @@ export default class UIMain extends lwg.Admin.Scene {
                 this.self['GuideLine'].alpha = 1;
                 break;
             case 'BtnBlue':
-                this.launchType = GEnum.bulletType.bule;
+                this.launchColor = GEnum.bulletColor.bule;
                 this.self['BtnYellow'].scale(1, 1);
                 this.self['BtnBlue'].scale(1.1, 1.1);
                 this.self['BtnGreen'].scale(1, 1);
@@ -138,7 +167,7 @@ export default class UIMain extends lwg.Admin.Scene {
 
                 break;
             case 'BtnGreen':
-                this.launchType = GEnum.bulletType.green;
+                this.launchColor = GEnum.bulletColor.green;
                 this.self['BtnYellow'].scale(1, 1);
                 this.self['BtnBlue'].scale(1, 1);
                 this.self['BtnGreen'].scale(1.1, 1.1);
@@ -154,8 +183,6 @@ export default class UIMain extends lwg.Admin.Scene {
         }
     }
 
-
-
     onStageMouseMove(e: Laya.Event): void {
         if (this.touchColor !== null) {
             let x = e.stageX;
@@ -168,7 +195,7 @@ export default class UIMain extends lwg.Admin.Scene {
             line.height = len;
 
             let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
-            this.self['GuideLine'].rotation = lwg.Tools.vectorAngle(movePoint.x, movePoint.y) - 90;
+            this.self['GuideLine'].rotation = lwg.Tools.vector_Angle(movePoint.x, movePoint.y);
             this.touchColor.rotation = this.self['GuideLine'].rotation;
 
             this.self[this.touchColor.name]
@@ -183,12 +210,9 @@ export default class UIMain extends lwg.Admin.Scene {
         if (this.touchColor !== null) {
             let distance = point.distance(this.touchColor.x, this.touchColor.y);
             if (distance > 100) {
-                let bullet = this.createBullet(this.touchColor.x, this.touchColor.y) as Laya.Sprite;
                 let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
                 movePoint.normalize();
-                // console.log(movePoint);
-                bullet.getComponent(UIMain_Bullet).movePoint = movePoint;
-                bullet.rotation = this.self['GuideLine'].rotation;
+                EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.protagonist, this.launchColor, null, this.touchColor.x, this.touchColor.y, movePoint, 80]);
             }
         }
         this.self['GuideLine'].alpha = 0;
@@ -196,14 +220,7 @@ export default class UIMain extends lwg.Admin.Scene {
         this.touchColor = null;
     }
 
-
-    timer: number = 0;
     lwgOnUpdate(): void {
-        if (lwg.Admin._gameStart) {
-            if (this.timer % 100 === 0) {
-                this.createEnemy();
-            }
-            this.timer++;
-        }
+
     }
 }

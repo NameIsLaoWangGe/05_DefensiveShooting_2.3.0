@@ -558,13 +558,14 @@ export module lwg {
         }
     }
 
-  
+
 
     /**事件类*/
     export module EventAdmin {
 
         export enum EventType {
             gameOver = 'gameOver',
+
         }
 
         export class EventClass {
@@ -573,7 +574,12 @@ export module lwg {
             /**事件基类*/
             dispatcher: Laya.EventDispatcher = new Laya.EventDispatcher();
 
-            /**事件注册*/
+            /**
+             * 事件注册,总控制事件注册在当前类，每个游戏独有的事件不要注册在这里，防止每关重复注册
+             * @param type 事件类型或者名称
+             * @param caller 事件的执行域
+             * @param listener 响应事件的回调函数以下写法可以传递参数进来:()=>{}
+             */
             static reg(type: any, caller: any, listener: Function) {
                 if (!caller) {
                     console.error("caller must exist!");
@@ -581,22 +587,37 @@ export module lwg {
                 EventClass.Self.dispatcher.on(type.toString(), caller, listener);
             }
 
-            /**事件通知*/
+            /**
+             * 通知事件
+             * @param type 事件类型或者名称
+             * @param args 注册事件中的回调函数中的参数
+             */
             static notify(type: any, args?: any) {
                 EventClass.Self.dispatcher.event(type.toString(), args);
             }
 
-            /**关闭某个事件*/
+            /**
+             * 关闭某个事件
+             * @param type 事件类型或者名称
+             * @param caller 事件的执行域
+             * @param listener 关闭后的回调函数
+             * */
             static off(type: any, caller: any, listener: Function) {
                 EventClass.Self.dispatcher.off(type.toString(), caller, listener);
             }
 
-            /**关闭所有事件*/
+            /**
+             * 关闭所有执行域中的事件
+             * @param type 事件类型或者名称
+            */
             static offAll(type: any) {
                 EventClass.Self.dispatcher.offAll(type.toString());
             }
 
-            /**移除某个caller上的所有事件*/
+            /**
+             * 移除某个caller上的所有事件
+             * @param caller 执行域
+            */
             static offCaller(caller: any) {
                 EventClass.Self.dispatcher.offAllCaller(caller);
             }
@@ -2184,16 +2205,20 @@ export module lwg {
         export function off(effect, target, caller, down, move, up, out): void {
             let btnEffect;
             switch (effect) {
-                case 'largen':
+                case ClickType.noEffect:
+                    btnEffect = new Btn_NoEffect();
+                    break;
+                case ClickType.largen:
                     btnEffect = new Btn_LargenEffect();
                     break;
-                case 'balloon':
+                case ClickType.balloon:
                     btnEffect = new Btn_Balloon();
                     break;
-                case 'beetle':
+                case ClickType.balloon:
                     btnEffect = new Btn_Beetle();
                     break;
                 default:
+                    btnEffect = new Btn_LargenEffect();
                     break;
             }
             // btnPrintPoint('on', target);
@@ -2202,6 +2227,11 @@ export module lwg {
             target.off(Laya.Event.MOUSE_MOVE, caller, move);
             target.off(Laya.Event.MOUSE_UP, caller, up);
             target.off(Laya.Event.MOUSE_OUT, caller, out);
+
+            target.off(Laya.Event.MOUSE_DOWN, caller, btnEffect.down);
+            target.off(Laya.Event.MOUSE_MOVE, caller, btnEffect.move);
+            target.off(Laya.Event.MOUSE_UP, caller, btnEffect.up);
+            target.off(Laya.Event.MOUSE_OUT, caller, btnEffect.out);
         }
     }
 
@@ -3300,13 +3330,27 @@ export module lwg {
          * @param x 坐标x
          * @param y 坐标y
          * */
-        export function vectorAngle(x, y) {
+        export function vector_Angle(x, y): number {
             let radian: number = Math.atan2(x, y) //弧度  0.6435011087932844
             let angle: number = 90 - radian * (180 / Math.PI); //角度  36.86989764584402;
             if (angle <= 0) {
                 angle = 270 + (90 + angle);
             }
-            return angle;
+            return angle - 90;
+        };
+
+        /**
+         * 在Laya2维世界中
+         * 通过一个角度，返回一个单位向量
+         * @param x 坐标x
+         * @param y 坐标y
+         * */
+        export function angle_Vector(angle): Laya.Point {
+            angle -= 90;
+            let radian = (90 - angle) / (180 / Math.PI);
+            let p = new Laya.Point(Math.sin(radian), Math.cos(radian));
+            p.normalize();
+            return p;
         };
 
         /**

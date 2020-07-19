@@ -1,11 +1,12 @@
 {
     "x":0,
     "type":"Sprite",
-    "selectedBox":34,
+    "selectedBox":33,
+    "selecteID":41,
     "searchKey":"Sprite,Bullet",
     "props":{"y":0,"x":0,"width":40,"presetID":1,"preset":"laya/pages/Prefab/Bullet.prefab","pivotY":20,"pivotX":20,"name":"Bullet","isPresetRoot":true,"height":40},
     "nodeParent":-1,
-    "maxID":37,
+    "maxID":42,
     "label":"Bullet",
     "isOpen":true,
     "isDirectory":true,
@@ -17,15 +18,29 @@
             "x":15,
             "type":"Image",
             "searchKey":"Image,Pic",
-            "props":{"y":-20,"x":20,"width":21,"skin":"Frame/UI/ui_square_009.png","sizeGrid":"19,8,19,5","presetID":2,"preset":"laya/pages/Prefab/Bullet.prefab","pivotX":11,"name":"Pic","height":128},
+            "props":{"y":-20,"x":20,"width":21,"skin":"Frame/UI/ui_square_009.png","sizeGrid":"19,8,19,5","rotation":0,"presetID":2,"preset":"laya/pages/Prefab/Bullet.prefab","pivotX":11,"name":"Pic","height":128},
             "nodeParent":34,
             "label":"Pic",
-            "isDirectory":false,
+            "isOpen":true,
+            "isDirectory":true,
             "isAniNode":true,
-            "hasChild":false,
+            "hasChild":true,
             "compId":33,
             "child":[
-                ]
+                {
+                    "x":30,
+                    "type":"Sprite",
+                    "searchKey":"Sprite",
+                    "props":{"texture":"Frame/Effects/cir_blue.png","presetID":3,"preset":"laya/pages/Prefab/Bullet.prefab"},
+                    "nodeParent":33,
+                    "label":"Sprite(Bullet)",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":41,
+                    "child":[
+                        ]
+                }]
         }],
     "animations":[
         {
