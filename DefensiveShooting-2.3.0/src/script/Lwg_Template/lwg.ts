@@ -1243,32 +1243,32 @@ export module lwg {
     export module Effects {
         /**特效元素的图片地址，所有项目都可用*/
         export enum SkinUrl {
-            'Effects/cir_white.png',
-            "Effects/cir_black.png",
-            "Effects/cir_blue.png",
-            "Effects/cir_bluish.png",
-            "Effects/cir_cyan.png",
-            "Effects/cir_grass.png",
-            "Effects/cir_green.png",
-            "Effects/cir_orange.png",
-            "Effects/cir_pink.png",
-            "Effects/cir_purple.png",
-            "Effects/cir_red.png",
-            "Effects/cir_yellow.png",
+            'Frame/Effects/cir_white.png',
+            "Frame/Effects/cir_black.png",
+            "Frame/Effects/cir_blue.png",
+            "Frame/Effects/cir_bluish.png",
+            "Frame/Effects/cir_cyan.png",
+            "Frame/Effects/cir_grass.png",
+            "Frame/Effects/cir_green.png",
+            "Frame/Effects/cir_orange.png",
+            "Frame/Effects/cir_pink.png",
+            "Frame/Effects/cir_purple.png",
+            "Frame/Effects/cir_red.png",
+            "Frame/Effects/cir_yellow.png",
 
-            "Effects/star_black.png",
-            "Effects/star_blue.png",
-            "Effects/star_bluish.png",
-            "Effects/star_cyan.png",
-            "Effects/star_grass.png",
-            "Effects/star_green.png",
-            "Effects/star_orange.png",
-            "Effects/star_pink.png",
-            "Effects/star_purple.png",
-            "Effects/star_red.png",
-            "Effects/star_white.png",
-            "Effects/star_yellow.png",
-            "Effects/icon_biggold.png"
+            "Frame/Effects/star_black.png",
+            "Frame/Effects/star_blue.png",
+            "Frame/Effects/star_bluish.png",
+            "Frame/Effects/star_cyan.png",
+            "Frame/Effects/star_grass.png",
+            "Frame/Effects/star_green.png",
+            "Frame/Effects/star_orange.png",
+            "Frame/Effects/star_pink.png",
+            "Frame/Effects/star_purple.png",
+            "Frame/Effects/star_red.png",
+            "Frame/Effects/star_white.png",
+            "Frame/Effects/star_yellow.png",
+            "Frame/Effects/icon_biggold.png"
         }
 
         /**类粒子特效的通用父类*/
@@ -1362,10 +1362,12 @@ export module lwg {
          * 创建普通爆炸动画，四周爆炸随机散开
          * @param parent 父节点
          * @param quantity 数量
-         * @param speed 速度
-         * @param continueTime 持续时间（按帧数计算）
          * @param x X轴位置
          * @param y Y轴位置
+         * @param style 皮肤类型
+         * @param speed 速度
+         * @param continueTime 持续时间（按帧数计算）
+      
          */
         export function createCommonExplosion(parent, quantity, x, y, style, speed, continueTime): void {
             for (let index = 0; index < quantity; index++) {

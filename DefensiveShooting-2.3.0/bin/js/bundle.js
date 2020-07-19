@@ -711,31 +711,31 @@
         (function (Effects) {
             let SkinUrl;
             (function (SkinUrl) {
-                SkinUrl[SkinUrl["Effects/cir_white.png"] = 0] = "Effects/cir_white.png";
-                SkinUrl[SkinUrl["Effects/cir_black.png"] = 1] = "Effects/cir_black.png";
-                SkinUrl[SkinUrl["Effects/cir_blue.png"] = 2] = "Effects/cir_blue.png";
-                SkinUrl[SkinUrl["Effects/cir_bluish.png"] = 3] = "Effects/cir_bluish.png";
-                SkinUrl[SkinUrl["Effects/cir_cyan.png"] = 4] = "Effects/cir_cyan.png";
-                SkinUrl[SkinUrl["Effects/cir_grass.png"] = 5] = "Effects/cir_grass.png";
-                SkinUrl[SkinUrl["Effects/cir_green.png"] = 6] = "Effects/cir_green.png";
-                SkinUrl[SkinUrl["Effects/cir_orange.png"] = 7] = "Effects/cir_orange.png";
-                SkinUrl[SkinUrl["Effects/cir_pink.png"] = 8] = "Effects/cir_pink.png";
-                SkinUrl[SkinUrl["Effects/cir_purple.png"] = 9] = "Effects/cir_purple.png";
-                SkinUrl[SkinUrl["Effects/cir_red.png"] = 10] = "Effects/cir_red.png";
-                SkinUrl[SkinUrl["Effects/cir_yellow.png"] = 11] = "Effects/cir_yellow.png";
-                SkinUrl[SkinUrl["Effects/star_black.png"] = 12] = "Effects/star_black.png";
-                SkinUrl[SkinUrl["Effects/star_blue.png"] = 13] = "Effects/star_blue.png";
-                SkinUrl[SkinUrl["Effects/star_bluish.png"] = 14] = "Effects/star_bluish.png";
-                SkinUrl[SkinUrl["Effects/star_cyan.png"] = 15] = "Effects/star_cyan.png";
-                SkinUrl[SkinUrl["Effects/star_grass.png"] = 16] = "Effects/star_grass.png";
-                SkinUrl[SkinUrl["Effects/star_green.png"] = 17] = "Effects/star_green.png";
-                SkinUrl[SkinUrl["Effects/star_orange.png"] = 18] = "Effects/star_orange.png";
-                SkinUrl[SkinUrl["Effects/star_pink.png"] = 19] = "Effects/star_pink.png";
-                SkinUrl[SkinUrl["Effects/star_purple.png"] = 20] = "Effects/star_purple.png";
-                SkinUrl[SkinUrl["Effects/star_red.png"] = 21] = "Effects/star_red.png";
-                SkinUrl[SkinUrl["Effects/star_white.png"] = 22] = "Effects/star_white.png";
-                SkinUrl[SkinUrl["Effects/star_yellow.png"] = 23] = "Effects/star_yellow.png";
-                SkinUrl[SkinUrl["Effects/icon_biggold.png"] = 24] = "Effects/icon_biggold.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_white.png"] = 0] = "Frame/Effects/cir_white.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_black.png"] = 1] = "Frame/Effects/cir_black.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_blue.png"] = 2] = "Frame/Effects/cir_blue.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_bluish.png"] = 3] = "Frame/Effects/cir_bluish.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_cyan.png"] = 4] = "Frame/Effects/cir_cyan.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_grass.png"] = 5] = "Frame/Effects/cir_grass.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_green.png"] = 6] = "Frame/Effects/cir_green.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_orange.png"] = 7] = "Frame/Effects/cir_orange.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_pink.png"] = 8] = "Frame/Effects/cir_pink.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_purple.png"] = 9] = "Frame/Effects/cir_purple.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_red.png"] = 10] = "Frame/Effects/cir_red.png";
+                SkinUrl[SkinUrl["Frame/Effects/cir_yellow.png"] = 11] = "Frame/Effects/cir_yellow.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_black.png"] = 12] = "Frame/Effects/star_black.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_blue.png"] = 13] = "Frame/Effects/star_blue.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_bluish.png"] = 14] = "Frame/Effects/star_bluish.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_cyan.png"] = 15] = "Frame/Effects/star_cyan.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_grass.png"] = 16] = "Frame/Effects/star_grass.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_green.png"] = 17] = "Frame/Effects/star_green.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_orange.png"] = 18] = "Frame/Effects/star_orange.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_pink.png"] = 19] = "Frame/Effects/star_pink.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_purple.png"] = 20] = "Frame/Effects/star_purple.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_red.png"] = 21] = "Frame/Effects/star_red.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_white.png"] = 22] = "Frame/Effects/star_white.png";
+                SkinUrl[SkinUrl["Frame/Effects/star_yellow.png"] = 23] = "Frame/Effects/star_yellow.png";
+                SkinUrl[SkinUrl["Frame/Effects/icon_biggold.png"] = 24] = "Frame/Effects/icon_biggold.png";
             })(SkinUrl = Effects.SkinUrl || (Effects.SkinUrl = {}));
             class EffectsBase extends Laya.Script {
                 onAwake() {
@@ -2414,6 +2414,7 @@
             (function (BulletWhoFired) {
                 BulletWhoFired["protagonist"] = "protagonist";
                 BulletWhoFired["split"] = "split";
+                BulletWhoFired["tree"] = "tree";
             })(BulletWhoFired = GEnum.BulletWhoFired || (GEnum.BulletWhoFired = {}));
             let enemyType;
             (function (enemyType) {
@@ -2445,6 +2446,8 @@
             (function (SpecialObj) {
                 SpecialObj["stone"] = "Stone";
                 SpecialObj["commonSplit"] = "CommonSplit";
+                SpecialObj["tree"] = "Tree";
+                SpecialObj["bomb"] = "Bomb";
             })(SpecialObj = GEnum.SpecialObj || (GEnum.SpecialObj = {}));
             let EventType;
             (function (EventType) {
@@ -2627,6 +2630,12 @@
                                 case GEnum.SpecialObj.commonSplit:
                                     this.attackSplit(specialObj);
                                     break;
+                                case GEnum.SpecialObj.tree:
+                                    this.attackTree(specialObj);
+                                    break;
+                                case GEnum.SpecialObj.bomb:
+                                    this.attackBomb(specialObj);
+                                    break;
                                 default:
                                     break;
                             }
@@ -2656,8 +2665,36 @@
                 }
                 this.self.removeSelf();
                 for (let index = 0; index < 4; index++) {
-                    EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.split, this.bulletColor, null, split.x, split.y, Tools.angle_Vector(90 * index + 45), 40]);
+                    EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.split, this.bulletColor, null, split.x, split.y, Tools.angle_Vector(90 * index + 45), 45]);
                 }
+            }
+        }
+        attackBomb(bomb) {
+            let Num = bomb.getChildByName('Num');
+            Num.text = (Number(Num.text) - 1).toString();
+            if (Num.text <= '0') {
+                Effects.createCommonExplosion(this.selfScene['EffectParent'], 20, bomb.x, bomb.y, 'star', 10, 15);
+                for (let index = 0; index < this.EnemyParent.numChildren; index++) {
+                    const element = this.EnemyParent.getChildAt(index);
+                    let len = (new Laya.Point(bomb.x, bomb.y)).distance(element.x, element.y);
+                    if (len < 200) {
+                        element.removeSelf();
+                        index--;
+                    }
+                }
+                bomb.removeSelf();
+            }
+            this.self.removeSelf();
+        }
+        attackTree(tree) {
+            if (this.whoFired !== GEnum.BulletWhoFired.tree) {
+                let Num = tree.getChildByName('Num');
+                Num.text = (Number(Num.text) - 1).toString();
+                if (Num.text <= '0') {
+                    tree.removeSelf();
+                }
+                this.whoFired = GEnum.BulletWhoFired.tree;
+                this.speed /= 2;
             }
         }
         lwgOnUpdate() {
@@ -2669,7 +2706,7 @@
                     return;
                 }
                 else {
-                    if (this.speed + this.accelerated <= 10) ;
+                    if (this.speed + this.accelerated < 10) ;
                     else {
                         this.accelerated -= 2;
                     }
@@ -2844,7 +2881,7 @@
                 if (distance > 100) {
                     let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
                     movePoint.normalize();
-                    EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.protagonist, this.launchColor, null, this.touchColor.x, this.touchColor.y, movePoint, 80]);
+                    EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.protagonist, this.launchColor, null, this.touchColor.x, this.touchColor.y, movePoint, 70]);
                 }
             }
             this.self['GuideLine'].alpha = 0;

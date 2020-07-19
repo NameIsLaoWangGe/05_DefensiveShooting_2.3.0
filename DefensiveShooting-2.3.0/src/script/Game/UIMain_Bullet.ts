@@ -1,4 +1,4 @@
-import { lwg, EventAdmin, Tools } from "../Lwg_Template/lwg";
+import { lwg, EventAdmin, Tools, Effects } from "../Lwg_Template/lwg";
 import { GEnum, GVariate } from "../Lwg_Template/Global";
 
 
@@ -74,7 +74,12 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
                             case GEnum.SpecialObj.commonSplit:
                                 this.attackSplit(specialObj);
                                 break;
-
+                            case GEnum.SpecialObj.tree:
+                                this.attackTree(specialObj);
+                                break;
+                            case GEnum.SpecialObj.bomb:
+                                this.attackBomb(specialObj);
+                                break;
                             default:
                                 break;
                         }
@@ -117,9 +122,51 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
             }
             this.self.removeSelf();
             for (let index = 0; index < 4; index++) {
-                EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.split, this.bulletColor, null, split.x, split.y, Tools.angle_Vector(90 * index + 45), 40]);
+                EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.split, this.bulletColor, null, split.x, split.y, Tools.angle_Vector(90 * index + 45), 45]);
             }
         }
+    }
+
+    /**
+     * 和炸弹碰撞
+     * 炸弹生命值变为零后，会爆炸，爆炸造成范围内大量伤害
+     * */
+    attackBomb(bomb): void {
+        // 石头生命值结束后会消失
+        let Num = bomb.getChildByName('Num') as Laya.Label;
+        Num.text = (Number(Num.text) - 1).toString();
+        if (Num.text <= '0') {
+            Effects.createCommonExplosion(this.selfScene['EffectParent'], 20, bomb.x, bomb.y, 'star', 10, 15);
+            for (let index = 0; index < this.EnemyParent.numChildren; index++) {
+                const element = this.EnemyParent.getChildAt(index) as Laya.Sprite;
+                let len = (new Laya.Point(bomb.x, bomb.y)).distance(element.x, element.y);
+                if (len < 200) {
+                    element.removeSelf();
+                    index--;
+                }
+            }
+            bomb.removeSelf();
+        }
+        this.self.removeSelf();
+    }
+
+
+    /**
+      * 和分裂装置的碰撞
+      * 碰撞之后会消失，然后分裂成数个子弹，向四周发射，威力不减
+      * */
+    attackTree(tree): void {
+        if (this.whoFired !== GEnum.BulletWhoFired.tree) {
+            // 石头生命值结束后会消失
+            let Num = tree.getChildByName('Num') as Laya.Label;
+            Num.text = (Number(Num.text) - 1).toString();
+            if (Num.text <= '0') {
+                tree.removeSelf();
+            }
+            this.whoFired = GEnum.BulletWhoFired.tree;
+            this.speed /= 2;
+        }
+
     }
 
 
@@ -131,7 +178,8 @@ export default class UIMain_Bullet extends lwg.Admin.Object {
                 this.accelerated = 0;
                 return;
             } else {
-                if (this.speed + this.accelerated <= 10) {
+                // 最低速度不低于10
+                if (this.speed + this.accelerated < 10) {
                 } else {
                     this.accelerated -= 2;
                 }

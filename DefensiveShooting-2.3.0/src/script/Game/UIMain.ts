@@ -212,7 +212,7 @@ export default class UIMain extends lwg.Admin.Scene {
             if (distance > 100) {
                 let movePoint = new Laya.Point(x - this.touchColor.x, y - this.touchColor.y);
                 movePoint.normalize();
-                EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.protagonist, this.launchColor, null, this.touchColor.x, this.touchColor.y, movePoint, 80]);
+                EventAdmin.EventClass.notify(GEnum.EventType.createBullet, [GEnum.BulletWhoFired.protagonist, this.launchColor, null, this.touchColor.x, this.touchColor.y, movePoint, 70]);
             }
         }
         this.self['GuideLine'].alpha = 0;

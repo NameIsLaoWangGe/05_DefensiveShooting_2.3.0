@@ -86,10 +86,11 @@ export module Global {
             stone = 'stone'
         }
 
-        /**是谁发射的子弹*/
+        /**是谁发射的子弹,或者是子弹从什么物体上发出,目前的作用是防止反复与自己碰撞*/
         export enum BulletWhoFired {
             protagonist = 'protagonist',
             split = 'split',
+            tree = 'tree',
         }
 
         /**敌人类型*/
@@ -128,6 +129,10 @@ export module Global {
             stone = 'Stone',
             /**普通分裂装置*/
             commonSplit = 'CommonSplit',
+            /**树*/
+            tree = 'Tree',
+            /**炸弹*/
+            bomb = 'Bomb'
         }
 
         /**事件类型*/
