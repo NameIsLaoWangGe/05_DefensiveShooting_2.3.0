@@ -2743,6 +2743,7 @@
         selfNode() {
         }
         lwgOnEnable() {
+            console.log(JSON.parse('null'));
             this.bulletNum = 0;
             this.self['GuideLine'].alpha = 0;
             this.touchColor = null;
